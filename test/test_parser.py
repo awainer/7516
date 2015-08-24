@@ -14,7 +14,7 @@ class Test(unittest.TestCase):
 
     def test_parse_factor(self):
         txt = StringIO()
-        txt.write("6")
+        txt.write(".")
         txt.seek(0)
         
         my_scanner = scanner.Scanner(txt)

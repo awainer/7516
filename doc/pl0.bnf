@@ -1,20 +1,85 @@
-program = block "." .
+BNF GRAMMAR FOR PL/0
+--------------------
 
-block = [ "const" ident "=" number {"," ident "=" number} ";"]
-        [ "var" ident {"," ident} ";"]
-        { "procedure" ident ";" block ";" } statement .
+<program> ::= <block> .
 
-statement = [ ident ":=" expression | "call" ident 
-              | "?" ident | "!" expression 
-              | "begin" statement {";" statement } "end" 
-              | "if" condition "then" statement 
-              | "while" condition "do" statement ].
+<block> ::= <const-decl> <var-decl> <proc-decl> <statement>
 
-condition = "odd" expression |
-            expression ("="|"#"|"<"|"<="|">"|">=") expression .
+<const-decl> ::= const <const-assignment-list> ; | e
 
-expression = [ "+"|"-"] term { ("+"|"-") term}.
+<const-assignment-list> ::= <ident> = <number>
+            | <const-assignment-list> , <ident> = <number>
 
-term = factor {("*"|"/") factor}.
+<var-decl> ::= var <ident-list> ; | e
 
-factor = ident | number | "(" expression ")".
+<ident-list> ::= <ident> | <ident-list> , <ident>
+
+<proc-decl> ::= <proc-decl> procedure <ident> ; <block> ; | e
+
+<statement> ::= <ident> := <expression>
+            | call <ident>
+            | begin <statement-list> end
+            | if <condition> then <statement>
+            | while <condition> do <statement>
+            | e
+
+<statement-list> ::= <statement> | <statement-list> ; <statement>
+
+<condition> ::= odd <expression> | <expression> <relation> <expression>
+
+<relation> ::= = | <> | < | > | <= | >=
+
+<expression> ::= <term> | <adding-operator> <term>
+            | <expression> <adding-operator> <term>
+
+<adding-operator> ::= + | -
+
+<term> ::= <factor> | <term> <multiplying-operator> <factor>
+
+<multiplying-operator> ::= * | /
+
+<factor> ::= <ident> | <number> | ( <expression> )
+
+Notes.
+(1)  "e" denotes the empty string.
+(2)  <ident> and <number>  are  tokens  representing  identifiers  and  numbers,
+     respectively.
+
+
+EXTENDED BNF GRAMMAR FOR PL/0
+-----------------------------
+
+<program> ::= <block> .
+
+<block> ::= <const-decl> <var-decl> <proc-decl> <statement>
+
+<const-decl> ::= [const <ident> = <number> {, <ident> = <number>} ;]
+
+<var-decl> ::= [var <ident> {, <ident>} ;]
+
+<proc-decl> ::= {procedure <ident> ; <block> ;}
+
+<statement> ::= <ident> := <expression>
+            | call <ident>
+            | begin <statement> {; <statement>} end
+            | if <condition> then <statement>
+            | while <condition> do <statement>
+            | e
+
+<condition> ::= odd <expression> | <expression> <relation> <expression>
+
+<relation> ::= = | <> | < | > | <= | >=
+
+<expression> ::= [<adding-operator>] <term> {<adding-operator> <term>}
+
+<adding-operator> ::= + | -
+
+<term> ::= <factor> {<multiplying-operator> <factor>}
+
+<multiplying-operator> ::= * | /
+
+<factor> ::= <ident> | <number> | ( <expression> )
+
+Notes.
+(1)  Optional constructions are enclosed in square brackets ([]).
+(2)  Constructs repeated zero or more times are enclosed in curly brackets ({}).

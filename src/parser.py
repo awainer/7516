@@ -6,7 +6,7 @@ Created on 23/8/2015
 from ply import yacc
 import logging
 
-class Parser(object):
+class Parser():
     def __init__(self, scanner):
         self.scanner = scanner
         self.tokens = scanner.tokens
@@ -14,36 +14,86 @@ class Parser(object):
         self._parser = yacc.yacc(debug=log, module=self)
 
     def parse(self):
-        self._parser.parse(self.scanner.get_lexer())
+        self._parser.parse(lexer=self.scanner.get_lexer())
         
     def p_program(self, p):
-        'program :  block "."'
-         
+        'program :  block program_end'
+
+
     def p_block(self, p):
         ''' 
-        block : [ "const" ident "=" number {"," ident "=" number} ";"]  [ "var" ident {"," ident} ";"]  { "procedure" ident ";" block ";" } statement .
+          block : const_decl var_decl proc_decl statement
         '''
-    def p_statement(self, p):
-        ''' statement : [ ident ":=" expression | "call" ident 
-              | "?" ident | "!" expression 
-              | "begin" statement {";" statement } "end" 
-              | "if" condition "then" statement 
-              | "while" condition "do" statement ].
+    def p_const_decl(self, p):
+        '''
+        const_decl : 
+        const_decl : const const_assignment_list 
+        '''
+            
+    def p_const_assignment_list(self, p):
+        '''
+        const_assignment_list : ident equal number 
+                                | const_assignment_list "," ident equal  number    
         '''
         
-    def p_condition(self, p):
-        ''' condition :  "odd" expression | expression ("="|"#"|"<"|"<="|">"|">=") expression .
+    def p_var_decl(self, p):
         '''
-    def p_expression(self, p):
-        ''' expression : [ "+"|"-"] term { ("+"|"-") term}.
+        var_decl : 
+        var_decl : var ident_list 
         '''
-    def p_term(self, p):
-        ''' term :  factor {("*"|"/") factor}.
+    def p_ident_list(self, p):
         '''
-    def p_factor(self, p):
-        ''' factor :  ident | number | "(" expression ")".
+        ident_list : ident
+        ident_list : ident_list comma ident
+        '''
+    
+    def p_proc_decl(self, p):
+        '''
+        proc_decl : 
+        proc_decl : proc_decl procedure ident semicolon block semicolon
         '''
 
+    def p_statement(self ,p):
+        '''
+        statement :
+        statement : ident assign expression
+                    | call ident
+                    | begin statement_list end
+                    | if condition then statement
+                    | while condition do statement
+        '''
+    def p_statement_list(self, p):
+        '''
+        statement_list : statement 
+                        | statement_list semicolon statement
+        '''
+    def p_condition(self, p):
+        '''
+        condition : odd expression
+                    | expression relation expression
+        '''
+    def p_expression(self, p):
+        '''
+        expression : term 
+                    | add term
+                    | substract term 
+                    | expression add term
+        '''
+    def p_term(self ,p):
+        '''
+        term : factor
+               | term multiply factor
+               | term divide factor
+        '''
+    
+    def p_factor(self, p):
+        '''
+        factor : ident 
+                | number 
+                | open_parenthesis expression close_parenthesis
+        '''
+        
+    
     def p_error(self, p):
         print "Syntax error at '%s'" % p.value        
         

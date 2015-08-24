@@ -3,7 +3,7 @@ from ply import lex
 class Scanner(object):
 
     # Lista de tokens
-    tokens = ["number", "equal", "not_equal", "comma", "semicolon", "assign", "logic_operation", "add", "substract", "multiply", "divide", "open_parenthesis", "close_parenthesis", "ident", "string", "program_end", "newline", ]
+    tokens = ["number", "equal", "relation", "comma", "semicolon", "assign", "add", "substract", "multiply", "divide", "open_parenthesis", "close_parenthesis", "ident", "string", "program_end", "newline", ]
     # http://stackoverflow.com/questions/5022129/ply-lex-parsing-problem
     reserved = [ 'const', 'var', 'procedure', 'call', 'if', 'then', 'while', 'do', 'begin', 'end', 'odd', 'write', 'writeln', 'readln' ]
     tokens += reserved
@@ -26,7 +26,6 @@ class Scanner(object):
         return t
     t_const = 'const '
     t_equal = '='
-    t_not_equal = '<>'
     t_comma = ','
     t_semicolon = ';'
     t_var = "VAR"
@@ -40,7 +39,7 @@ class Scanner(object):
     t_while = "WHILE"
     t_do = "DO"
     t_odd = "odd"
-    t_logic_operation = r"(=|<=|>=|<|>)"
+    t_relation = r"(=|<=|>=|<|>|<>)"
     t_add = "\+"
     t_substract = "-"
     t_multiply = "\*"
