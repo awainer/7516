@@ -8,7 +8,7 @@ class Scanner(object):
     reserved = [ 'const', 'var', 'procedure', 'call', 'if', 'then', 'while', 'do', 'begin', 'end', 'odd', 'write', 'writeln', 'readln' ]
     tokens += reserved
     
-    def __init__(self,src_file):
+    def __init__(self, src_file):
         self.lexer = lex.lex(module=self)
         text = src_file.read()
         self.lexer.input(text)        

@@ -14,7 +14,7 @@ class Test(unittest.TestCase):
 
     def test_parse_factor(self):
         txt = StringIO()
-        txt.write(".")
+        txt.write("var a.")
         txt.seek(0)
         
         my_scanner = scanner.Scanner(txt)
@@ -25,5 +25,5 @@ class Test(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
+    # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
