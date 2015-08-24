@@ -1,6 +1,4 @@
 from ply import lex
-import sys
-
 
 class Scanner(object):
 
@@ -10,13 +8,16 @@ class Scanner(object):
     reserved = [ 'const', 'var', 'procedure', 'call', 'if', 'then', 'while', 'do', 'begin', 'end', 'odd', 'write', 'writeln', 'readln' ]
     tokens += reserved
     
-    def __init__(self,filename):
-        lex.lex(module=self)
-        with open(filename,'r') as f:
-            lex.input(f.read())        
+    def __init__(self,src_file):
+        self.lexer = lex.lex(module=self)
+        text = src_file.read()
+        self.lexer.input(text)        
+
+    def get_lexer(self):
+        return self.lexer
     
     def next_token(self):
-        return lex.token()
+        return self.lexer.token()
     
     # Definicion de tokens
     def t_number(self, t):
