@@ -7,9 +7,12 @@ class Scanner(object):
     # http://stackoverflow.com/questions/5022129/ply-lex-parsing-problem
     reserved = [ 'const', 'var', 'procedure', 'call', 'if', 'then', 'while', 'do', 'begin', 'end', 'odd', 'write', 'writeln', 'readln' ]
     tokens += reserved
+
+    def __init__(self):
+        pass
     
     def __init__(self, src_file):
-        self.lexer = lex.lex(module=self)
+        self.lexer = lex.lex(module=self, debug=1)
         text = src_file.read()
         self.lexer.input(text)        
 
@@ -24,7 +27,7 @@ class Scanner(object):
         r'\d+'
         t.value = int(t.value)
         return t
-    t_const = 'const '
+    t_const = 'const'
     t_equal = '='
     t_comma = ','
     t_semicolon = ';'
@@ -66,5 +69,3 @@ class Scanner(object):
         raise TypeError("Unknown text '%s' at %s" % (t.value, t.lexer.lineno))
     
 
-
-    

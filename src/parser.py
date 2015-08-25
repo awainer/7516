@@ -18,50 +18,64 @@ class Parser():
 
     def parse(self):
         self.log.info("Empezando parse")
-        self._parser.parse(lexer=self.scanner.get_lexer())
+        return self._parser.parse(lexer=self.scanner.get_lexer())
         
     def p_program(self, p):
         'program :  block program_end'
-        self.log.info("Parseando program")
+        self.log.info("Parseando program %s" % p[1])
+        p[0] = p[1]
 
 
     def p_block(self, p):
         ''' 
           block : const_decl var_decl proc_decl statement
         '''
-        self.log.info("Parseando block: %s" % p)
+        self.log.info("Parseando block: %s" % p[1:])
+        p[0] = p[1:]
+    
     def p_const_decl(self, p):
         '''
         const_decl : 
         const_decl : const const_assignment_list 
         '''
-        self.log.info("Parseando declaracion de constantes: %s" % p)    
+        self.log.info("Parseando declaracion de constantes: %s" % p[1:])
+        p[0] = p[1:]
+        
     def p_const_assignment_list(self, p):
         '''
+         
         const_assignment_list : ident equal number 
-                                | const_assignment_list "," ident equal  number    
+                                | const_assignment_list "," ident equal  number
+                                | ident   
         '''
-        self.log.info("Parseando assigment list: %s" % p)
+        self.log.info("Parseando assigment list: %s" % p[1:])
+        p[0] = p[1:]
+    
     def p_var_decl(self, p):
         '''
         var_decl : 
-        var_decl : var ident_list 
+        var_decl : var ident_list
         '''
-        self.log.info("Parseando declaracion de variables: %s" % p)
+        self.log.info("Parseando declaracion de variables: %s" % p[1:])
+        p[0] = p[1:]
+    
     def p_ident_list(self, p):
         '''
         ident_list : ident
+        ident_list : ident_list semicolon
         ident_list : ident_list comma ident
         '''
-        self.log.info("Parseando lista de ids: %s" % p)
+        self.log.info("Parseando lista de ids: %s" % p[1:])
+        p[0] = p[1:]
     
     def p_proc_decl(self, p):
         '''
         proc_decl : 
         proc_decl : proc_decl procedure ident semicolon block semicolon
         '''
-        self.log.info("Parseando declaracion de procedimientos: %s" % p)
-
+        self.log.info("Parseando declaracion de procedimientos: %s" % p[1:])
+        p[0] = p[1:]
+    
     def p_statement(self , p):
         '''
         statement :
@@ -71,20 +85,25 @@ class Parser():
                     | if condition then statement
                     | while condition do statement
         '''
-        self.log.info("Parseando statement: %s" % p)
-        
+        self.log.info("Parseando statement: %s" % p[1:])
+        p[0] = p[1:]
+    
     def p_statement_list(self, p):
         '''
         statement_list : statement 
                         | statement_list semicolon statement
         '''
-        self.log.info("Parseando statement list: %s" % p)
+        self.log.info("Parseando statement list: %s" % p[1:])
+        p[0] = p[1:]
+
     def p_condition(self, p):
         '''
         condition : odd expression
                     | expression relation expression
         '''
-        self.log.info("Parseando condition: %s" % p)
+        self.log.info("Parseando condition: %s" % p[1:])
+        p[0] = p[1:]
+    
     def p_expression(self, p):
         '''
         expression : term 
@@ -92,22 +111,29 @@ class Parser():
                     | substract term 
                     | expression add term
         '''
-        self.log.info("Parseando expression: %s" % p)
+        self.log.info("Parseando expression: %s" % p[1:])
+        p[0] = p[1:]
+    
     def p_term(self , p):
         '''
         term : factor
                | term multiply factor
                | term divide factor
         '''
-        self.log.info("Parseando term: %s" % p)
+        self.log.info("Parseando term: %s" % p[1:])
+        p[0] = p[1:]
+    
     def p_factor(self, p):
         '''
         factor : ident 
                 | number 
                 | open_parenthesis expression close_parenthesis
         '''
-        self.log.info("Parseando factor: %s" % p)
+        self.log.info("Parseando factor: %s" % p[1:])
+        p[0] = p[1:]
     
     def p_error(self, p):
-        print "Syntax error at '%s'" % p.value        
+        if not p:
+            return
+        raise ValueError("Syntax error at '%s' line " % p.value,p.lexer.lineno)        
         
