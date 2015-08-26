@@ -19,28 +19,25 @@ class Test(unittest.TestCase):
     #     txt.seek(0)
     #     my_scanner = scanner.Scanner(txt)
     #     my_parser = parser.Parser(my_scanner)
-    #     print my_parser.parse()
-    # 
+    #     my_parser.parse()
+    #  
+    # def test_parse_const_declaration(self):
+    #     s = 'VAR X,y,z,w.'
+    #     txt = StringIO()
+    #     txt.write(s)
+    #     txt.seek(0)
+    #     my_scanner = scanner.Scanner(txt)
+    #     my_parser = parser.Parser(my_scanner)
+    #     my_parser.parse()
     #===========================================================================
 
-#    def test_parse_bien0(self):
-#        with open('../ejemplos/BIEN-00.PL0') as txt:
-#            my_scanner = scanner.Scanner(txt)
-#            my_parser = parser.Parser(my_scanner)
-#            print my_parser.parse()            
 
-    def test_parse_const_declaration(self):
-        s = 'const a=2.'
-        txt = StringIO()
-        txt.write(s)
-        txt.seek(0)
-        my_scanner = scanner.Scanner(txt)
-        #tok = my_scanner.next_token()
-        #while tok:
-        #    print tok
-        #    tok = my_scanner.next_token()
-        my_parser = parser.Parser(my_scanner)
-        print my_parser.parse()
+    def test_parse_bien0(self):
+        with open('../ejemplos/BIEN-00.PL0') as txt:
+            my_scanner = scanner.Scanner(txt)
+            my_parser = parser.Parser(my_scanner)
+            print my_parser.parse()
+                        
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

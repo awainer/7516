@@ -42,7 +42,7 @@ class Scanner(object):
     t_while = "WHILE"
     t_do = "DO"
     t_odd = "odd"
-    t_relation = r"(=|<=|>=|<|>|<>)"
+    t_relation = r"(<=|>=|<|>|<>)"
     t_add = "\+"
     t_substract = "-"
     t_multiply = "\*"
