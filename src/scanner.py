@@ -3,11 +3,11 @@ from ply import lex
 class Scanner(object):
 
     # Lista de tokens
-    tokens = ["number", "equal", "relation", "comma", "semicolon", "assign", "add", "substract", "multiply", "divide", "open_parenthesis", "close_parenthesis", "ident", "string", "program_end", "newline", ]
+    tokens = ["number", "equal", "relation", "comma",  "assign", "add", "substract", "multiply", "divide", "open_parenthesis", "close_parenthesis", "ident", "string", "program_end", "newline", ]
     # http://stackoverflow.com/questions/5022129/ply-lex-parsing-problem
     reserved = [ 'const', 'var', 'procedure', 'call', 'if', 'then', 'while', 'do', 'begin', 'end', 'odd', 'write', 'writeln', 'readln' ]
     tokens += reserved
-
+    literals = ";"
     def __init__(self):
         pass
     
@@ -30,7 +30,6 @@ class Scanner(object):
     t_const = 'const'
     t_equal = '='
     t_comma = ','
-    t_semicolon = ';'
     t_var = "VAR"
     t_procedure = "procedure"
     t_assign = ":="
@@ -42,7 +41,7 @@ class Scanner(object):
     t_while = "WHILE"
     t_do = "DO"
     t_odd = "odd"
-    t_relation = r"<=|>=|<|>|<>"
+    t_relation = r"<>|<=|>=|<|>"
     #t_relation = r"<>|<"
     t_add = "\+"
     t_substract = "-"
