@@ -19,7 +19,7 @@ class Parser():
     def parse(self):
         self.log.info("Empezando parse")
         return self._parser.parse(lexer=self.scanner.get_lexer())
-        
+    start = 'program'
     def p_program(self, p):
         'program :  block program_end'
         self.log.info("Parseando program %s" % p[1])
@@ -29,7 +29,6 @@ class Parser():
     def p_block(self, p):
         ''' 
           block : const_decl var_decl proc_decl statement
-                  | block semicolon
         '''
         self.log.info("Parseando block: %s" % p[1:])
         p[0] = p[1:]
@@ -46,7 +45,8 @@ class Parser():
         '''
         const_assignment_list : ident equal number 
                                 | const_assignment_list comma const_assignment_list
-                                | ident   
+                                | ident
+                                | const_assignment_list semicolon   
         '''
         self.log.info("Parseando assigment list: %s" % p[1:])
         p[0] = p[1:]
@@ -74,11 +74,10 @@ class Parser():
                     |
         '''
         self.log.info("Parseando declaracion de procedimientos: %s" % p[1:])
-        p[0] = p[1:]
+        #p[0] = p[1:]
     
     def p_statement(self , p):
         '''
-        statement :
         statement : ident assign expression
                     | call ident
                     | begin statement_list end
@@ -87,6 +86,7 @@ class Parser():
                     | writeln writeln_args
                     | write   writeln_args
                     | readln  open_parenthesis ident close_parenthesis
+                    | 
         '''
         self.log.info("Parseando statement: %s" % p[1:])
         p[0] = p[1:]
@@ -101,6 +101,8 @@ class Parser():
         '''
         writeln_args : open_parenthesis string close_parenthesis
                        | open_parenthesis string comma expr_list close_parenthesis
+                       | writeln_args semicolon
+                       |
         '''
         self.log.info("Parseando write args: %s" % p[1:])
         p[0] = p[1:]
@@ -127,6 +129,7 @@ class Parser():
                     | add term
                     | substract term 
                     | expression add term
+                    | expression substract term
         '''
         self.log.info("Parseando expression: %s" % p[1:])
         p[0] = p[1:]
