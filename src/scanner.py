@@ -1,27 +1,28 @@
 from ply import lex
 
+
 class Scanner(object):
 
     # Lista de tokens
-    tokens = ["number", "equal", "relation", "comma", "semicolon", "assign", "add", "substract", "multiply", "divide", "open_parenthesis", "close_parenthesis", "ident", "string", "program_end", "newline", ]
+    tokens = ["number", "equal", "relation", "comma", "semicolon", "assign", "add", "substract",
+              "multiply", "divide", "open_parenthesis", "close_parenthesis", "ident", "string",
+              "program_end", "newline", ]
     # http://stackoverflow.com/questions/5022129/ply-lex-parsing-problem
-    reserved = [ 'const', 'var', 'procedure', 'call', 'if', 'then', 'while', 'do', 'begin', 'end', 'odd', 'write', 'writeln', 'readln' ]
+    reserved = ['const', 'var', 'procedure', 'call', 'if', 'then', 'while', 'do', 'begin', 'end',
+                'odd', 'write', 'writeln', 'readln']
     tokens += reserved
 
-    def __init__(self):
-        pass
-    
-    def __init__(self, src_file):
-        self.lexer = lex.lex(module=self, debug=1)
+    def __init__(self, src_file, debug=0):
+        self.lexer = lex.lex(module=self, debug=debug)
         text = src_file.read()
-        self.lexer.input(text)        
+        self.lexer.input(text)
 
     def get_lexer(self):
         return self.lexer
-    
+
     def next_token(self):
         return self.lexer.token()
-    
+
     # Definicion de tokens
     def t_number(self, t):
         r'\d+'
@@ -42,31 +43,30 @@ class Scanner(object):
     t_while = "WHILE"
     t_do = "DO"
     t_odd = "odd"
-    t_relation = r"<=|>=|<|>|<>"
-    #t_relation = r"<>|<"
+    t_relation = r"<>|<=|>=|<|>"
     t_add = "\+"
     t_substract = "-"
     t_multiply = "\*"
     t_divide = "/"
     t_open_parenthesis = "\("
     t_close_parenthesis = "\)"
-    
+
     def t_ident(self, t):
         r"[a-z|A-Z]\w{0,10}"
         if t.value.lower() in self.reserved:
             t.type = t.value.lower()
         return t
     t_ignore = " \t"
-    t_writeln = "writeln" 
+    t_writeln = "writeln"
     t_write = "write"
     t_string = "'.*'"
     t_program_end = "\."
-    
+
     def t_newline(self, t):
         r'[\n\r]+'
         t.lexer.lineno += t.value.count('\n')
-    
+
     def t_error(self, t):
         raise TypeError("Unknown text '%s' at %s" % (t.value, t.lexer.lineno))
-    
+
 
