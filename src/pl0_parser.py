@@ -30,7 +30,7 @@ class Parser():
 
     def p_block(self, p):
         '''
-          block : const_decl var_decl
+          block : const_decl var_decl proc_decl
         '''
         self.log.info("Parseando block: %s" % p[1:])
         p[0] = p[1:]
@@ -66,6 +66,12 @@ class Parser():
         ident_list : ident
                    | ident_list comma ident
         '''
+    def p_proc_decl(self, p):
+        '''
+        proc_decl : procedure ident semicolon block semicolon
+                  |
+        '''
+
     def p_error(self, p):
         if not p:
             return

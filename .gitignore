@@ -58,3 +58,6 @@ target/
 .project
 .pydevproject
 
+test/parser.out
+src/parser.out
+src/parsetab.py
