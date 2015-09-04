@@ -38,6 +38,7 @@ class Parser():
     def p_const_decl(self, p):
         '''
         const_decl : const const_assignment_list
+                    | const_decl semicolon
                     |
         '''
         self.log.info("Parseando declaracion de constantes: %s" % p[1:])
@@ -48,7 +49,7 @@ class Parser():
         const_assignment_list : ident equal number
                                 | const_assignment_list comma const_assignment_list
                                 | ident
-                                | const_assignment_list semicolon
+
         '''
         self.log.info("Parseando assigment list: %s" % p[1:])
         p[0] = p[1:]

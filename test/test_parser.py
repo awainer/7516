@@ -49,8 +49,12 @@ class Test(unittest.TestCase):
     def test_var_and_const_decl(self):
         self.generic_test("const a,b,c; var d, e , f;.")
 
-    def test_proc_decl(self):
-        self.generic_test("procedure garompa1;.")
+    def test_proc_decl_empty_body(self):
+        self.generic_test("procedure garompa;;.")
+
+    def test_proc_decl_with_body(self):
+        self.generic_test("procedure garompa;const a;;;.")
+        
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
