@@ -4,7 +4,8 @@ Created on 23/8/2015
 @author: ari
 '''
 import unittest
-
+import sys
+sys.path.append("../src")
 from io import StringIO
 import scanner
 import pl0_parser
@@ -54,7 +55,7 @@ class Test(unittest.TestCase):
 
     def test_proc_decl_with_body(self):
         self.generic_test("procedure garompa;const a;;.")
-        
+
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
