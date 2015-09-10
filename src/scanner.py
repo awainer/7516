@@ -52,7 +52,7 @@ class Scanner(object):
     t_close_parenthesis = "\)"
 
     def t_ident(self, t):
-        r"[a-z|A-Z]\w{0,10}"
+        r"[a-z|A-Z]\w{0,16}"
         if t.value.lower() in self.reserved:
             t.type = t.value.lower()
         return t

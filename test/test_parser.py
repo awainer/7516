@@ -57,6 +57,9 @@ class Test(unittest.TestCase):
     def test_parse_assign(self):
         self.generic_test("a := 1.")
 
+    def test_parse_assign_menosuno(self):
+        self.generic_test('R := -(-UNO);')
+
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

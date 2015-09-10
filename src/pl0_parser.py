@@ -121,6 +121,27 @@ class Parser():
         self.parse_statement()
         self.log.debug('Fin parseando bloque')
 
+    def parse_writeln_args(self):
+        if self.next_token.type == 'open_parenthesis':
+            self.parse_write_args()
+
+    def parse_write_args(self):
+        self.assert_type('open_parenthesis')
+        self.read_token()
+        if self.next_token.type == 'string':
+            self.read_token()
+        else:
+            self.parse_expression()
+
+        while not self.next_token.type == 'close_parenthesis':
+            self.assert_type('comma')
+            self.read_token()
+            if self.next_token.type == 'string':
+                self.read_token()
+            else:
+                self.parse_expression()         
+        self.read_token()
+
     def parse_statement(self):
         self.log.debug('Parseando statement')
         if self.next_token.type == 'ident':
@@ -142,6 +163,7 @@ class Parser():
                 self.assert_type('semicolon')
                 self.read_token()
                 self.parse_statement()
+            self.read_token()
 
         elif self.next_token.type == 'if':
             self.read_token()
@@ -155,7 +177,20 @@ class Parser():
             self.assert_type('do')
             self.read_token()
             self.parse_statement()
-        
+        elif self.next_token.type == 'write':
+            self.read_token()
+            self.parse_write_args()
+        elif self.next_token.type == 'writeln':
+            self.read_token()
+            self.parse_writeln_args()
+        elif self.next_token.type == 'readln':
+            self.read_token()
+            self.assert_type('open_parenthesis')
+            self.read_token()
+            self.assert_type('ident')
+            self.read_token()
+            self.assert_type('close_parenthesis')
+            self.read_token()
 
 
     def parse_factor(self):
@@ -169,7 +204,6 @@ class Parser():
         if self.next_token.type == 'open_parenthesis':
             self.read_token()
             self.parse_expression()
-            self.read_token()
             self.assert_type('close_parenthesis')
             self.read_token()
 
@@ -194,13 +228,19 @@ class Parser():
             self.parse_term() 
 
     def parse_condition(self):
+        self.log.debug("Parseando condition")
         if self.next_token.type == 'odd':
             self.read_token()
             self.parse_expression()
         else:
             self.read_token()
             self.parse_expression()
-            self.assert_type('relation')            
+            if self.next_token.type == 'equal':
+                pass
+            else:
+                self.assert_type('relation')            
+            self.read_token()
+            self.parse_expression()
 
 
 
