@@ -32,6 +32,7 @@ class Parser():
         return True
 
     def error(self, s):
+        self.log.error(s)
         raise ValueError(s)
 
     def error_expected(self, expected):
@@ -68,7 +69,7 @@ class Parser():
                 self.error("Error, token inesperado: " + str(self.next_token))
 
     def assert_type(self, expected_type):
-        if not self.next_token.type == type:
+        if not self.next_token.type == expected_type:
             self.error_expected(expected_type)
 
     def parse_var_decl(self):
@@ -121,17 +122,18 @@ class Parser():
         self.log.debug('Fin parseando bloque')
 
     def parse_statement(self):
+        self.log.debug('Parseando statement')
         if self.next_token.type == 'ident':
             self.read_token()
             # last_id = self.last_token.value
             self.assert_type('assign')
-            self.read_token()
             self.read_token()
             self.parse_expression()
 
         elif self.next_token.type == 'call':
             self.read_token()
             self.assert_type('ident')
+            self.read_token()
 
         elif self.next_token.type == 'begin':
             self.read_token()
@@ -153,8 +155,11 @@ class Parser():
             self.assert_type('do')
             self.read_token()
             self.parse_statement()
+        
+
 
     def parse_factor(self):
+        self.log.debug('Parseando factor')
         if self.next_token.type == 'ident':
             self.read_token()
             return
@@ -169,18 +174,33 @@ class Parser():
             self.read_token()
 
     def parse_term(self):
-        self.parse_term()
-        while self.next_token.type == 'multiply' or 'divide':
+        self.log.debug('Parseando termino')
+        self.parse_factor()
+        while self.next_token.type in ['multiply', 'divide']:
             # TODO ver que op es
             self.read_token()
             self.parse_factor()
-        self.read_token()
+
 
     def parse_expression(self):
-        pass
+        self.log.debug("Parseando expression")
+        if self.next_token.type == 'add':
+            self.read_token()
+        elif self.next_token.type == 'substract':
+            self.read_token()
+        self.parse_term()
+        while self.next_token.type == 'substract' or self.next_token.type == 'add':
+            self.read_token()
+            self.parse_term() 
 
     def parse_condition(self):
-        pass
+        if self.next_token.type == 'odd':
+            self.read_token()
+            self.parse_expression()
+        else:
+            self.read_token()
+            self.parse_expression()
+            self.assert_type('relation')            
 
 
 
