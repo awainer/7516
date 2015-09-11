@@ -14,9 +14,13 @@ class Scanner(object):
 
     def __init__(self, src_file, debug=0):
         self.lexer = lex.lex(module=self, debug=debug)
-        text = src_file.read()
-        self.lexer.input(text)
-
+        self.lines = src_file.readlines()
+        src_file.seek(0)
+        self.lexer.input(src_file.read())
+        src_file.close()
+        self.log_line('1', self.lines[0].strip())
+        self.line_count = 0
+        
     def get_lexer(self):
         return self.lexer
 
@@ -64,7 +68,17 @@ class Scanner(object):
 
     def t_newline(self, t):
         r'[\n\r]+'
+        self.log_current_line(t)
         t.lexer.lineno += t.value.count('\n')
+
+    def log_line(self,number, line):        
+        print('***** Reading line %s : %s' %(number, line))
+
+    def log_current_line(self,t):
+        while self.line_count < t.lexer.lineno:
+            self.log_line(t.lexer.lineno+1, self.lines[self.line_count].strip())
+            self.line_count+=1
+        #self.log_line(t.lexer.lineno+1, self.lines[t.lexer.lineno].strip())
 
     def t_error(self, t):
         raise TypeError("Unknown text '%s' at %s" % (t.value, t.lexer.lineno))

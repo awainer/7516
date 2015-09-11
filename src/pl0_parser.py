@@ -22,7 +22,6 @@ class Parser():
     def read_token(self):
         self.next_token = self.scanner.next_token()
         self.log.info("Se lee token %s" % self.next_token)
-        print("Se lee token %s" % self.next_token)
 
     def parse(self, debug=0):
         self.log.info("****************************")
