@@ -5,13 +5,14 @@ Created on 23/8/2015
 '''
 
 import logging
-
+from symbol_table import SymbolTable
 
 class Parser():
     def __init__(self, scanner):
         self.scanner = scanner
         self.tokens = scanner.tokens
         self.log = logging.getLogger('parser')
+        self.table = SymbolTable()
         if not len(self.log.handlers):
             self.log.setLevel(logging.DEBUG)
             hdlr = logging.FileHandler('/tmp/myapp.log')
@@ -39,11 +40,11 @@ class Parser():
 
     def parse_program(self):
         self.read_token()
-        self.parse_block()
+        self.parse_block(0)
         if not self.next_token.type == 'program_end':
             self.error("Se esperaba punto, se obtuvo: " + str(self.next_token))
 
-    def parse_const_decl(self):
+    def parse_const_decl(self, base, offset):
         last_id = ''
         while self.next_token.type != "semicolon":
             self.read_token()
@@ -51,71 +52,80 @@ class Parser():
                 last_id = self.next_token.value
                 self.log.info("Declaro constante " + self.next_token.value)
                 last_id = self.next_token.value
-            elif self.next_token.type == "comma":
-                pass
             elif self.next_token.type == "equal":
                 self.read_token()
                 if self.next_token.type == "number":
                     self.log.info("Inicializo  constante %s con %s" % (last_id,
                                                                        self.next_token.value))
+                    self.table.add_const(last_id, self.next_token.value)
+                    offset+=1
                 else:
                     self.error("Se esperaba un numero, pero se encontro:" +
                                self.next_token.type)
             elif self.next_token.type == 'semicolon':
                 self.read_token()
-                return
+                return offset
             else:
                 self.error("Error, token inesperado: " + str(self.next_token))
+        return offset
 
     def assert_type(self, expected_type):
         if not self.next_token.type == expected_type:
             self.error_expected(expected_type)
 
-    def parse_var_decl(self):
+    def parse_var_decl(self, base, offset):
         last_id = ''
         while self.next_token.type != "semicolon":
             self.read_token()
             if self.next_token.type == "ident":
+                offset+=1
                 last_id = self.next_token.value
                 self.log.info("Declaro variable " + self.next_token.value)
                 last_id = self.next_token.value
             elif self.next_token.type == "comma":
-                pass
+                self.table.add_var(last_id, 0, offset)
             elif self.next_token.type == "equal":
                 self.read_token()
                 if self.next_token.type == "number":
                     self.log.info("Inicializo  variable %s con %s" % (last_id,
                                                                       self.next_token.value))
+                    self.table.add_var(last_id, self.next_token.value, offset)
                 else:
                     self.error("Se esperaba un numero, pero se encontro:" +
                                self.next_token.type)
             elif self.next_token.type == 'semicolon':
                 self.read_token()
-                return
+                return offset
             else:
                 self.error("Error, token inesperado: " + str(self.next_token))
+        return offset
 
-    def parse_procedure_decl(self):
+    def parse_procedure_decl(self, base, offset):
         self.read_token()
         self.assert_type('ident')
+        self.table.add_procedure(self.next_token.value, 0, offset)
+        offset+=1
         self.log.info("Parseando procedimiento: %s" % self.next_token.value)
         self.read_token()
         self.assert_type('semicolon')
         self.read_token()
-        self.parse_block()
+        self.parse_block(base+offset)
         self.assert_type('semicolon')
         self.read_token()
+        return offset
 
-    def parse_block(self):
+    def parse_block(self, base):
         self.log.debug('Parseando bloque')
+        offset = 0
+        
         if self.next_token.type == 'const':
-            self.parse_const_decl()
+            offset = self.parse_const_decl(base, offset)
 
         if self.next_token.type == 'var':
-            self.parse_var_decl()
+            offset = self.parse_var_decl(base, offset)
 
         while self.next_token.type == 'procedure':
-            self.parse_procedure_decl()
+            offset = self.parse_procedure_decl(base, offset)
 
         self.parse_statement()
         self.log.debug('Fin parseando bloque')
