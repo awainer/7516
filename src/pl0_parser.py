@@ -94,6 +94,7 @@ class Parser():
                     self.error("Se esperaba un numero, pero se encontro:" +
                                self.next_token.type)
             elif self.next_token.type == 'semicolon':
+                self.table.add_var(last_id, 0, offset)
                 self.read_token()
                 return offset
             else:

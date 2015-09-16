@@ -24,7 +24,7 @@ class Test(unittest.TestCase):
         txt.close()
 
     def test_re_declare_var(self):
-        self.generic_test('var a,a;.')
+        self.generic_test('var a,b,a;.')
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
