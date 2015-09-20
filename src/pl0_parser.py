@@ -83,18 +83,18 @@ class Parser():
                 self.log.info("Declaro variable " + self.next_token.value)
                 last_id = self.next_token.value
             elif self.next_token.type == "comma":
-                self.table.add_var(last_id, 0, offset)
+                self.table.add_var(last_id, 0, base)
             elif self.next_token.type == "equal":
                 self.read_token()
                 if self.next_token.type == "number":
                     self.log.info("Inicializo  variable %s con %s" % (last_id,
                                                                       self.next_token.value))
-                    self.table.add_var(last_id, self.next_token.value, offset)
+                    self.table.add_var(last_id, self.next_token.value, base)
                 else:
                     self.error("Se esperaba un numero, pero se encontro:" +
                                self.next_token.type)
             elif self.next_token.type == 'semicolon':
-                self.table.add_var(last_id, 0, offset)
+                self.table.add_var(last_id, 0, base)
                 self.read_token()
                 return offset
             else:
@@ -155,6 +155,8 @@ class Parser():
     def parse_statement(self):
         self.log.debug('Parseando statement')
         if self.next_token.type == 'ident':
+            self.log.info('Asignando valor a %s' % self.next_token.value)
+            self.table.get_var(self.next_token.value)
             self.read_token()
             # last_id = self.last_token.value
             self.assert_type('assign')
@@ -164,6 +166,8 @@ class Parser():
         elif self.next_token.type == 'call':
             self.read_token()
             self.assert_type('ident')
+            self.log.info('Llamando a %s' % self.next_token.value)
+            self.table.get_proc(self.next_token.value)
             self.read_token()
 
         elif self.next_token.type == 'begin':
@@ -198,6 +202,8 @@ class Parser():
             self.assert_type('open_parenthesis')
             self.read_token()
             self.assert_type('ident')
+            self.log.info('Leyendo en %s' % self.next_token.value)
+            self.table.get_var(self.next_token.value)
             self.read_token()
             self.assert_type('close_parenthesis')
             self.read_token()
@@ -206,6 +212,10 @@ class Parser():
     def parse_factor(self):
         self.log.debug('Parseando factor')
         if self.next_token.type == 'ident':
+            try:
+                self.table.get_var(self.next_token.value)
+            except ValueError:
+                self.table.get_const(self.next_token.value)
             self.read_token()
             return
         if self.next_token.type == 'number':

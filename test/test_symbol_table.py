@@ -24,7 +24,11 @@ class Test(unittest.TestCase):
         txt.close()
 
     def test_re_declare_var(self):
-        self.generic_test('var a,b,a;.')
+        self.generic_test('var a,b,c;\n procedure foo; var a;;.')
+        
+    def test_wrong_type(self):
+        with self.assertRaises(ValueError):
+            self.generic_test('var a,b,c;\n call a.')
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
