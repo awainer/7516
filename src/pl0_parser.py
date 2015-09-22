@@ -109,7 +109,7 @@ class Parser():
     def parse_procedure_decl(self, base, offset):
         self.read_token()
         self.assert_type('ident')
-        self.table.add_procedure(self.next_token.value, 0, offset)
+        self.table.add_procedure(self.next_token.value, 0, base)
         offset+=1
         self.log.info("Parseando procedimiento: %s" % self.next_token.value)
         self.read_token()
