@@ -27,17 +27,11 @@ class Test(unittest.TestCase):
     def test_parse_minimum_program(self):
         self.generic_test(".")
 
-    def test_parse_single_const(self):
-        self.generic_test("const A;.")
-
     def test_parse_single_const_sc(self):
         self.generic_test("const A=6;.")
 
     def test_parse_multiple_const(self):
-        self.generic_test("const A,B;.")
-
-    def test_parse_multiple_const_with_assigment(self):
-        self.generic_test("const A=1,B;.")
+        self.generic_test("const A=0,B=1;.")
 
     def test_single_var_decl(self):
         self.generic_test("var a;.")
@@ -46,7 +40,7 @@ class Test(unittest.TestCase):
         self.generic_test("var a,b,c,d;.")
 
     def test_var_and_const_decl(self):
-        self.generic_test("const a,b,c; var d, e , f;.")
+        self.generic_test("const a=0,b=2; var d, e , f;.")
 
     def test_proc_decl_empty_body(self):
         self.generic_test("procedure foo; ; .")
@@ -55,10 +49,10 @@ class Test(unittest.TestCase):
         self.generic_test("procedure foo;const a;;.")
 
     def test_parse_assign(self):
-        self.generic_test("a := 1.")
+        self.generic_test("var a; a := 1.")
 
     def test_parse_assign_menosuno(self):
-        self.generic_test('R := -(-UNO).')
+        self.generic_test('var R,UNO; R := -(-UNO).')
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

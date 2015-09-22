@@ -27,8 +27,11 @@ class SymbolTable(object):
     types = { CONST: 'Const', VAR: 'Var', PROCEDURE: 'Procedure'}
     
     def __init__(self):
+        self.reset()
+
+    def reset(self):
         self. table = []
-    
+
     def duplicate_ident(self, ident):
         raise ValueError("Error, el identificador %s ya se encuentra definido." % ident)
 
@@ -74,7 +77,7 @@ class SymbolTable(object):
             
     def lookup(self, ident):
         current_position = len(self.table) - 1
-        # que lindo sería un do...while
+
         while True and current_position >= 0:
             if self.table[current_position].ident == ident:
                 return self.table[current_position]

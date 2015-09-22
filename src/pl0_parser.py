@@ -20,6 +20,7 @@ class Parser():
             hdlr.setFormatter(formatter)
             self.log.addHandler(hdlr)
 
+    
     def read_token(self):
         self.next_token = self.scanner.next_token()
         self.log.info("Se lee token %s" % self.next_token)
@@ -36,7 +37,7 @@ class Parser():
         raise ValueError(s)
 
     def error_expected(self, expected):
-        raise ValueError("Se espèraba %s se recibio %s" % (expected, self.next_token))
+        raise ValueError("Se esperaba %s se recibio %s" % (expected, self.next_token))
 
     def parse_program(self):
         self.read_token()
@@ -57,8 +58,11 @@ class Parser():
                 if self.next_token.type == "number":
                     self.log.info("Inicializo  constante %s con %s" % (last_id,
                                                                        self.next_token.value))
-                    self.table.add_const(last_id, self.next_token.value)
+                    self.table.add_const(last_id, self.next_token.value, base)
                     offset+=1
+                    self.read_token()
+                    if self.next_token.type == 'comma':
+                        self.read_token()
                 else:
                     self.error("Se esperaba un numero, pero se encontro:" +
                                self.next_token.type)
@@ -67,6 +71,7 @@ class Parser():
                 return offset
             else:
                 self.error("Error, token inesperado: " + str(self.next_token))
+        self.read_token()
         return offset
 
     def assert_type(self, expected_type):
