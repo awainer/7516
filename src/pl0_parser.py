@@ -62,7 +62,8 @@ class Parser():
                     offset+=1
                     self.read_token()
                     if self.next_token.type == 'comma':
-                        self.read_token()
+                        pass
+                        #self.read_token()
                 else:
                     self.error("Se esperaba un numero, pero se encontro:" +
                                self.next_token.type)

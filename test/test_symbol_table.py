@@ -30,6 +30,9 @@ class Test(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.generic_test('var a,b,c;\n call a.')
 
+    def test_parse_multiple_const(self):
+        self.generic_test("const C=0,B=1;.")
+        
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

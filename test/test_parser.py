@@ -31,7 +31,7 @@ class Test(unittest.TestCase):
         self.generic_test("const A=6;.")
 
     def test_parse_multiple_const(self):
-        self.generic_test("const A=0,B=1;.")
+        self.generic_test("const C=0,B=1;.")
 
     def test_single_var_decl(self):
         self.generic_test("var a;.")
