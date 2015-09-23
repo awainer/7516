@@ -5,18 +5,7 @@ Created on 13 de set. de 2015
 '''
 import numpy as np
 
-class Symbol(object):
-    
-    def __init__(self, ident, value, symbol_type):
-        self.value = value
-        self.ident = ident
-        self.type = symbol_type
-    
-    def __str__(self):
-        return str(self.ident) + '=' + str(self.value) + ' tipo: ' + str(self.type)
-    
-    def __repr__(self):
-        return self.__str__()
+
 
 class SymbolTable(object):
 
@@ -24,7 +13,7 @@ class SymbolTable(object):
     VAR = np.uint32(1)
     PROCEDURE = np.uint32(2)
 
-    types = { CONST: 'Const', VAR: 'Var', PROCEDURE: 'Procedure'}
+    
     
     def __init__(self):
         self.reset()
@@ -56,30 +45,46 @@ class SymbolTable(object):
             if i.ident == ident:
                 self.duplicate_ident(ident)
 
-    def _get_symbol(self, ident, id_type):
-        res = self.lookup(ident.strip())
+    def _get_symbol(self, ident, id_type, base, offset):
+        end = 0
+        start = base + offset  - 1
+        res = self.lookup(ident.strip(),start, end)
         if not res:
             raise ValueError("Identificador desconocido: %s" % ident)
         
         if res.type == id_type:
             return res
         else:
-            raise ValueError("Identificador de tipo incorrecto, se obtuvo: %s y se esperaba %s" % (self.types[res.type], self.types[id_type]))
+            raise ValueError("Identificador de tipo incorrecto, se obtuvo: %s y se esperaba %s" % (res.types[res.type], res.types[id_type]))
 
-    def get_var(self, ident):
-        return self._get_symbol(ident, self.VAR)
+    def get_var(self, ident, base, offset):
+        return self._get_symbol(ident, self.VAR, base, offset)
 
-    def get_const(self, ident):
-        return self._get_symbol(ident, self.CONST)
+    def get_const(self, ident, base, offset):
+        return self._get_symbol(ident, self.CONST, base, offset)
 
-    def get_proc(self, ident):
-        return self._get_symbol(ident, self.PROCEDURE)    
+    def get_proc(self, ident, base, offset):
+        return self._get_symbol(ident, self.PROCEDURE, base, offset)    
             
-    def lookup(self, ident):
-        current_position = len(self.table) - 1
+    def lookup(self, ident,start,end):
+        current_position = start
 
-        while True and current_position >= 0:
+        while True and current_position >= end:
             if self.table[current_position].ident == ident:
                 return self.table[current_position]
             current_position -= 1
         return None
+    
+class Symbol(object):
+    types = { SymbolTable.CONST: 'Const', SymbolTable.VAR: 'Var', SymbolTable.PROCEDURE: 'Procedure'}
+    
+    def __init__(self, ident, value, symbol_type):
+        self.value = value
+        self.ident = ident
+        self.type = symbol_type
+    
+    def __str__(self):
+        return str(self.ident) + '=' + str(self.value) + ' tipo: ' + self.types[self.type]
+    
+    def __repr__(self):
+        return self.__str__()    

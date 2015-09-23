@@ -28,7 +28,11 @@ class Parser():
     def parse(self, debug=0):
         self.log.info("****************************")
         self.log.info("Empezando parse")
-        self.parse_program()
+        try:
+            self.parse_program()
+        except ValueError as e:
+            print('Ultimo token %s' %(self.next_token))
+            raise e
         self.log.info("Fin parse")
         return True
 
@@ -134,20 +138,20 @@ class Parser():
         while self.next_token.type == 'procedure':
             offset = self.parse_procedure_decl(base, offset)
 
-        self.parse_statement()
+        self.parse_statement(base, offset)
         self.log.debug('Fin parseando bloque')
 
-    def parse_writeln_args(self):
+    def parse_writeln_args(self, base, offset):
         if self.next_token.type == 'open_parenthesis':
-            self.parse_write_args()
+            self.parse_write_args(base, offset)
 
-    def parse_write_args(self):
+    def parse_write_args(self,base, offset):
         self.assert_type('open_parenthesis')
         self.read_token()
         if self.next_token.type == 'string':
             self.read_token()
         else:
-            self.parse_expression()
+            self.parse_expression(base, offset)
 
         while not self.next_token.type == 'close_parenthesis':
             self.assert_type('comma')
@@ -155,73 +159,73 @@ class Parser():
             if self.next_token.type == 'string':
                 self.read_token()
             else:
-                self.parse_expression()         
+                self.parse_expression(base, offset)         
         self.read_token()
 
-    def parse_statement(self):
+    def parse_statement(self, base, offset):
         self.log.debug('Parseando statement')
         if self.next_token.type == 'ident':
             self.log.info('Asignando valor a %s' % self.next_token.value)
-            self.table.get_var(self.next_token.value)
+            self.table.get_var(self.next_token.value, base, offset)
             self.read_token()
             # last_id = self.last_token.value
             self.assert_type('assign')
             self.read_token()
-            self.parse_expression()
+            self.parse_expression(base, offset)
 
         elif self.next_token.type == 'call':
             self.read_token()
             self.assert_type('ident')
             self.log.info('Llamando a %s' % self.next_token.value)
-            self.table.get_proc(self.next_token.value)
+            self.table.get_proc(self.next_token.value, base, offset)
             self.read_token()
 
         elif self.next_token.type == 'begin':
             self.read_token()
-            self.parse_statement()
+            self.parse_statement(base, offset)
             while not self.next_token.type == 'end':
                 self.assert_type('semicolon')
                 self.read_token()
-                self.parse_statement()
+                self.parse_statement(base, offset)
             self.read_token()
 
         elif self.next_token.type == 'if':
             self.read_token()
-            self.parse_condition()
+            self.parse_condition(base, offset)
             self.assert_type('then')
             self.read_token()
-            self.parse_statement()
+            self.parse_statement(base, offset)
         elif self.next_token.type == 'while':
             self.read_token()
-            self.parse_condition()
+            self.parse_condition(base, offset)
             self.assert_type('do')
             self.read_token()
-            self.parse_statement()
+            self.parse_statement(base, offset)
         elif self.next_token.type == 'write':
             self.read_token()
-            self.parse_write_args()
+            self.parse_write_args(base, offset)
         elif self.next_token.type == 'writeln':
             self.read_token()
-            self.parse_writeln_args()
+            self.parse_writeln_args(base, offset)
         elif self.next_token.type == 'readln':
             self.read_token()
             self.assert_type('open_parenthesis')
             self.read_token()
             self.assert_type('ident')
             self.log.info('Leyendo en %s' % self.next_token.value)
-            self.table.get_var(self.next_token.value)
+            self.table.get_var(self.next_token.value, base, offset)
             self.read_token()
             self.assert_type('close_parenthesis')
             self.read_token()
 
 
-    def parse_factor(self):
+    def parse_factor(self, base, offset):
         self.log.debug('Parseando factor')
         if self.next_token.type == 'ident':
             try:
-                self.table.get_var(self.next_token.value)
+                self.table.get_var(self.next_token.value, base, offset)
             except ValueError:
-                self.table.get_const(self.next_token.value)
+                self.table.get_const(self.next_token.value, base, offset)
             self.read_token()
             return
         if self.next_token.type == 'number':
@@ -229,44 +233,44 @@ class Parser():
             return
         if self.next_token.type == 'open_parenthesis':
             self.read_token()
-            self.parse_expression()
+            self.parse_expression(base, offset)
             self.assert_type('close_parenthesis')
             self.read_token()
 
-    def parse_term(self):
+    def parse_term(self,base, offset):
         self.log.debug('Parseando termino')
-        self.parse_factor()
+        self.parse_factor(base, offset)
         while self.next_token.type in ['multiply', 'divide']:
             # TODO ver que op es
             self.read_token()
-            self.parse_factor()
+            self.parse_factor(base, offset)
 
 
-    def parse_expression(self):
+    def parse_expression(self, base, offset):
         self.log.debug("Parseando expression")
         if self.next_token.type == 'add':
             self.read_token()
         elif self.next_token.type == 'substract':
             self.read_token()
-        self.parse_term()
+        self.parse_term(base, offset)
         while self.next_token.type == 'substract' or self.next_token.type == 'add':
             self.read_token()
-            self.parse_term() 
+            self.parse_term(base, offset) 
 
-    def parse_condition(self):
+    def parse_condition(self, base, offset):
         self.log.debug("Parseando condition")
         if self.next_token.type == 'odd':
             self.read_token()
-            self.parse_expression()
+            self.parse_expression(base, offset)
         else:
             self.read_token()
-            self.parse_expression()
+            self.parse_expression(base, offset)
             if self.next_token.type == 'equal':
                 pass
             else:
                 self.assert_type('relation')            
             self.read_token()
-            self.parse_expression()
+            self.parse_expression(base, offset)
 
 
 
