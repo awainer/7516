@@ -18,6 +18,12 @@ class SymbolTable(object):
     def __init__(self):
         self.reset()
 
+    def __repr__(self):
+        return str(self.table)
+    
+    def __str__(self, *args, **kwargs):
+        return self.__repr__()
+
     def reset(self):
         self. table = []
 
@@ -58,13 +64,13 @@ class SymbolTable(object):
             raise ValueError("Identificador de tipo incorrecto, se obtuvo: %s y se esperaba %s" % (res.types[res.type], res.types[id_type]))
 
     def get_var(self, ident, base, offset):
-        return self._get_symbol(ident, self.VAR, base, offset)
+        return self._get_symbol(ident, self.VAR, len(self.table), 0)
 
     def get_const(self, ident, base, offset):
-        return self._get_symbol(ident, self.CONST, base, offset)
+        return self._get_symbol(ident, self.CONST, len(self.table), 0 )
 
-    def get_proc(self, ident, base, offset):
-        return self._get_symbol(ident, self.PROCEDURE, base, offset)    
+    def get_proc(self, ident):
+        return self._get_symbol(ident, self.PROCEDURE, len(self.table), 0)    
             
     def lookup(self, ident,start,end):
         current_position = start

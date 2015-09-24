@@ -115,6 +115,7 @@ class Parser():
         self.read_token()
         self.assert_type('ident')
         self.table.add_procedure(self.next_token.value, 0, base)
+        self.log.debug("Agrego proc %s, base %s offset %s" % (self.next_token.value,base,offset))
         offset+=1
         self.log.info("Parseando procedimiento: %s" % self.next_token.value)
         self.read_token()
@@ -126,7 +127,7 @@ class Parser():
         return offset
 
     def parse_block(self, base):
-        self.log.debug('Parseando bloque')
+        self.log.debug('Parseando bloque, base: ' + str(base))
         offset = 0
         
         if self.next_token.type == 'const':
@@ -139,7 +140,7 @@ class Parser():
             offset = self.parse_procedure_decl(base, offset)
 
         self.parse_statement(base, offset)
-        self.log.debug('Fin parseando bloque')
+        self.log.debug('Fin parseando bloque, base %s offset %s' % (base,offset))
 
     def parse_writeln_args(self, base, offset):
         if self.next_token.type == 'open_parenthesis':
@@ -177,7 +178,7 @@ class Parser():
             self.read_token()
             self.assert_type('ident')
             self.log.info('Llamando a %s' % self.next_token.value)
-            self.table.get_proc(self.next_token.value, base, offset)
+            self.table.get_proc(self.next_token.value)
             self.read_token()
 
         elif self.next_token.type == 'begin':
