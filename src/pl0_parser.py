@@ -178,7 +178,7 @@ class Parser():
             self.read_token()
             self.assert_type('ident')
             self.log.info('Llamando a %s' % self.next_token.value)
-            self.table.get_proc(self.next_token.value)
+            self.table.get_proc(self.next_token.value,base,offset)
             self.read_token()
 
         elif self.next_token.type == 'begin':

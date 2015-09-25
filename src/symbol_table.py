@@ -4,7 +4,7 @@ Created on 13 de set. de 2015
 @author: ari
 '''
 import numpy as np
-
+import logging
 
 
 class SymbolTable(object):
@@ -17,6 +17,13 @@ class SymbolTable(object):
     
     def __init__(self):
         self.reset()
+        self.log = logging.getLogger('parser')
+        if not len(self.log.handlers):
+            self.log.setLevel(logging.DEBUG)
+            hdlr = logging.FileHandler('/tmp/myapp.log')
+            formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+            hdlr.setFormatter(formatter)
+            self.log.addHandler(hdlr)
 
     def __repr__(self):
         return str(self.table)
@@ -52,6 +59,7 @@ class SymbolTable(object):
                 self.duplicate_ident(ident)
 
     def _get_symbol(self, ident, id_type, base, offset):
+        self.log.debug("Get symbol: %s base %s, offset %s " % (ident,base,offset))
         end = 0
         start = base + offset  - 1
         res = self.lookup(ident.strip(),start, end)
@@ -61,16 +69,16 @@ class SymbolTable(object):
         if res.type == id_type:
             return res
         else:
-            raise ValueError("Identificador de tipo incorrecto, se obtuvo: %s y se esperaba %s" % (res.types[res.type], res.types[id_type]))
+            raise ValueError("Identificador %s de tipo incorrecto, se obtuvo: %s y se esperaba %s" % (ident, res.types[res.type], res.types[id_type]))
 
     def get_var(self, ident, base, offset):
-        return self._get_symbol(ident, self.VAR, len(self.table), 0)
+        return self._get_symbol(ident, self.VAR, base, offset)
 
     def get_const(self, ident, base, offset):
-        return self._get_symbol(ident, self.CONST, len(self.table), 0 )
+        return self._get_symbol(ident, self.CONST, base, offset )
 
-    def get_proc(self, ident):
-        return self._get_symbol(ident, self.PROCEDURE, len(self.table), 0)    
+    def get_proc(self, ident,base, offset):
+        return self._get_symbol(ident, self.PROCEDURE, base, offset)    
             
     def lookup(self, ident,start,end):
         current_position = start
