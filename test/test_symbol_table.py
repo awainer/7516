@@ -35,19 +35,18 @@ class Test(unittest.TestCase):
         
     def test_multiple_procs(self):
         txt = '''
-        procedure SALIDA;
-        begin
-          write ('Cociente: ')
-        end;
-        procedure SALIDA2;
-        begin
-          write ('Cociente2: ')
-        end;
+        procedure p1;
+          write ('p1');
+
         
-        begin
-        call SALIDA;
-        call SALIDA2;
-        end.
+        procedure p2;
+        var x=1;
+          x := 4;
+        
+        
+        
+        call p2
+        .
         '''
         self.generic_test(txt)
 

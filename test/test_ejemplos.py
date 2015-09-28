@@ -19,21 +19,21 @@ class Test(unittest.TestCase):
         #---- my_scanner = scanner.Scanner(open("../ejemplos/BIEN-01.PL0", 'r'))
         #-------------------------------- parser = pl0_parser.Parser(my_scanner)
         #-------------------------------------------------------- parser.parse()
-
-    def test_ejemplo_3(self):
-        my_scanner = scanner.Scanner(open("../ejemplos/BIEN-03.PL0", 'r'))
-        parser = pl0_parser.Parser(my_scanner)
-        parser.parse()
+#------------------------------------------------------------------------------ 
+    #------------------------------------------------- def test_ejemplo_3(self):
+        #---- my_scanner = scanner.Scanner(open("../ejemplos/BIEN-03.PL0", 'r'))
+        #-------------------------------- parser = pl0_parser.Parser(my_scanner)
+        #-------------------------------------------------------- parser.parse()
 #------------------------------------------------------------------------------ 
     #------------------------------------------------- def test_ejemplo_4(self):
         #---- my_scanner = scanner.Scanner(open("../ejemplos/BIEN-04.PL0", 'r'))
         #-------------------------------- parser = pl0_parser.Parser(my_scanner)
         #-------------------------------------------------------- parser.parse()
-#------------------------------------------------------------------------------ 
-    #------------------------------------------------- def test_ejemplo_5(self):
-        #---- my_scanner = scanner.Scanner(open("../ejemplos/BIEN-05.PL0", 'r'))
-        #-------------------------------- parser = pl0_parser.Parser(my_scanner)
-        #-------------------------------------------------------- parser.parse()
+
+    def test_ejemplo_5(self):
+        my_scanner = scanner.Scanner(open("../ejemplos/BIEN-05.PL0", 'r'))
+        parser = pl0_parser.Parser(my_scanner)
+        parser.parse()
 #------------------------------------------------------------------------------ 
     #------------------------------------------------- def test_ejemplo_6(self):
         #---- my_scanner = scanner.Scanner(open("../ejemplos/BIEN-06.PL0", 'r'))

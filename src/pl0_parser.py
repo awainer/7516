@@ -87,13 +87,17 @@ class Parser():
         last_id = ''
         while self.next_token.type != "semicolon":
             self.read_token()
-            if self.next_token.type == "ident":
+            if self.next_token.type == "semicolon":
+                self.read_token()
+                break
+            elif self.next_token.type == "ident":
                 offset+=1
                 last_id = self.next_token.value
                 self.log.info("Declaro variable " + self.next_token.value)
-                last_id = self.next_token.value
+
             elif self.next_token.type == "comma":
                 self.table.add_var(last_id, 0, base)
+                self.log.info("Inicializo  variable %s con valor por defecto" % last_id)
             elif self.next_token.type == "equal":
                 self.read_token()
                 if self.next_token.type == "number":
@@ -104,6 +108,7 @@ class Parser():
                     self.error("Se esperaba un numero, pero se encontro:" +
                                self.next_token.type)
             elif self.next_token.type == 'semicolon':
+
                 self.table.add_var(last_id, 0, base)
                 self.read_token()
                 return offset
@@ -121,7 +126,7 @@ class Parser():
         self.read_token()
         self.assert_type('semicolon')
         self.read_token()
-        self.parse_block(base+offset)
+        #offset += self.parse_block(base+offset)
         self.assert_type('semicolon')
         self.read_token()
         return offset
@@ -141,6 +146,7 @@ class Parser():
 
         self.parse_statement(base, offset)
         self.log.debug('Fin parseando bloque, base %s offset %s' % (base,offset))
+        return offset;
 
     def parse_writeln_args(self, base, offset):
         if self.next_token.type == 'open_parenthesis':
