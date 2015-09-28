@@ -37,18 +37,21 @@ class SymbolTable(object):
     def duplicate_ident(self, ident):
         raise ValueError("Error, el identificador %s ya se encuentra definido." % ident)
 
+    def insert(self, symbol, position):
+        self.table = self.table[:position] + [symbol] + self.table[position:]
+    
     def add_const(self, ident, value, initial_offset):
         self.check_defined(ident, initial_offset)
-        self.table.append(Symbol(ident.strip(), np.uint32(value), self.CONST))
+        self.insert(Symbol(ident.strip(), np.uint32(value), self.CONST),initial_offset)
 
     def add_var(self, ident, value, initial_offset):
         print('Adding var',ident)
         self.check_defined(ident, initial_offset)
-        self.table.append(Symbol(ident.strip(), np.uint32(value), self.VAR))
+        self.insert(Symbol(ident.strip(), np.uint32(value), self.VAR),initial_offset)
         
     def add_procedure(self, ident, value, initial_offset):
         self.check_defined(ident, initial_offset)
-        self.table.append(Symbol(ident.strip(), np.uint32(value), self.PROCEDURE))
+        self.insert(Symbol(ident.strip(), np.uint32(value), self.PROCEDURE),initial_offset)
 
     ## TODO ver base
     def check_defined(self, ident, base):
