@@ -50,6 +50,7 @@ class SymbolTable(object):
         self.check_defined(ident, initial_offset)
         self.table.append(Symbol(ident.strip(), np.uint32(value), self.PROCEDURE))
 
+    ## TODO ver base
     def check_defined(self, ident, base):
         scope = self.table[base:]
         print('Buscando %s en scope (base %s) : %s' % (ident, base,scope))
@@ -61,7 +62,7 @@ class SymbolTable(object):
     def _get_symbol(self, ident, id_type, base, offset):
         self.log.debug("Get symbol: %s base %s, offset %s " % (ident,base,offset))
         end = 0
-        start = base + offset  - 1
+        start = base + offset - 1
         res = self.lookup(ident.strip(),start, end)
         if not res:
             raise ValueError("Identificador desconocido: %s" % ident)
@@ -82,7 +83,9 @@ class SymbolTable(object):
             
     def lookup(self, ident,start,end):
         current_position = start
-
+        print('Lookup (%s)start: %s end: %s' % (ident,start,end))
+        print('Lookup Table (size %s): %s' % (len(self.table),self.table))
+        print('Buscando en %s' % self.table[end:start])
         while True and current_position >= end:
             if self.table[current_position].ident == ident:
                 return self.table[current_position]

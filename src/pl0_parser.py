@@ -85,18 +85,22 @@ class Parser():
 
     def parse_var_decl(self, base, offset):
         last_id = ''
+        added=False
         while self.next_token.type != "semicolon":
             self.read_token()
             if self.next_token.type == "semicolon":
+                if not added:
+                    self.table.add_var(last_id, 0, base)
                 self.read_token()
                 break
             elif self.next_token.type == "ident":
                 offset+=1
                 last_id = self.next_token.value
+                added = False
                 self.log.info("Declaro variable " + self.next_token.value)
-
             elif self.next_token.type == "comma":
                 self.table.add_var(last_id, 0, base)
+                added = True
                 self.log.info("Inicializo  variable %s con valor por defecto" % last_id)
             elif self.next_token.type == "equal":
                 self.read_token()
@@ -104,6 +108,7 @@ class Parser():
                     self.log.info("Inicializo  variable %s con %s" % (last_id,
                                                                       self.next_token.value))
                     self.table.add_var(last_id, self.next_token.value, base)
+                    added = True
                 else:
                     self.error("Se esperaba un numero, pero se encontro:" +
                                self.next_token.type)
@@ -120,13 +125,13 @@ class Parser():
         self.read_token()
         self.assert_type('ident')
         self.table.add_procedure(self.next_token.value, 0, base)
+        #offset+=1        
         self.log.debug("Agrego proc %s, base %s offset %s" % (self.next_token.value,base,offset))
-        offset+=1
         self.log.info("Parseando procedimiento: %s" % self.next_token.value)
         self.read_token()
         self.assert_type('semicolon')
         self.read_token()
-        #offset += self.parse_block(base+offset)
+        self.parse_block(base+offset)
         self.assert_type('semicolon')
         self.read_token()
         return offset
@@ -142,7 +147,8 @@ class Parser():
             offset = self.parse_var_decl(base, offset)
 
         while self.next_token.type == 'procedure':
-            offset = self.parse_procedure_decl(base, offset)
+            offset+=1
+            self.parse_procedure_decl(base, offset)
 
         self.parse_statement(base, offset)
         self.log.debug('Fin parseando bloque, base %s offset %s' % (base,offset))
