@@ -1,0 +1,22 @@
+'''
+Created on Sep 29, 2015
+
+@author: ari
+'''
+import unittest
+from code_writer import CodeWriter
+
+class Test(unittest.TestCase):
+
+    def test_mov_edi_literal(self):
+        writer = CodeWriter()
+        writer.mov_edi_literal(1234)
+        code = writer.get_code()
+        inst = code[len(code)-5:]
+        expected = [0xbf, 0xd2, 0x4, 0, 0]
+        for i in range(len(expected)):
+            self.assertEqual(inst[i], expected[i])
+
+if __name__ == "__main__":
+    #import sys;sys.argv = ['', 'Test.testName']
+    unittest.main()
