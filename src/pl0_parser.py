@@ -104,19 +104,9 @@ class Parser():
                 self.table.add_var(last_id, base)
                 added = True
                 self.log.info("Inicializo  variable %s con valor por defecto" % last_id)
-            #----------------------------- elif self.next_token.type == "equal":
-                #--------------------------------------------- self.read_token()
-                #-------------------------- if self.next_token.type == "number":
-                    # self.log.info("Inicializo  variable %s con %s" % (last_id,
-                                                                      # self.next_token.value))
-                    #-- self.table.add_var(last_id, self.next_token.value, base)
-                    #---------------------------------------------- added = True
-            #------------------------------------------------------------- else:
-                #------- self.error("Se esperaba un numero, pero se encontro:" +
-                               #-------------------------- self.next_token.type)
             elif self.next_token.type == 'semicolon':
 
-                self.table.add_var(last_id, 0, base)
+                self.table.add_var(last_id, base)
                 self.read_token()
                 return offset
             else:
@@ -126,7 +116,7 @@ class Parser():
     def parse_procedure_decl(self, base, offset):
         self.read_token()
         self.assert_type('ident')
-        self.table.add_procedure(self.next_token.value, 0, base)
+        self.table.add_procedure(self.next_token.value, self.writer.get_current_position(), base)
         #offset+=1        
         self.log.debug("Agrego proc %s, base %s offset %s" % (self.next_token.value,base,offset))
         self.log.info("Parseando procedimiento: %s" % self.next_token.value)
@@ -181,18 +171,23 @@ class Parser():
         self.log.debug('Parseando statement')
         if self.next_token.type == 'ident':
             self.log.info('Asignando valor a %s' % self.next_token.value)
-            self.table.get_var(self.next_token.value, base, offset)
+            var_position = self.table.get_var(self.next_token.value, base, offset).value
             self.read_token()
             # last_id = self.last_token.value
             self.assert_type('assign')
             self.read_token()
             self.parse_expression(base, offset)
+            self.writer.pop_eax()
+            self.writer.mov_edi_plus_literal_eax(var_position) # mov edi+offset,eax
 
         elif self.next_token.type == 'call':
             self.read_token()
             self.assert_type('ident')
-            self.log.info('Llamando a %s' % self.next_token.value)
-            self.table.get_proc(self.next_token.value,base,offset)
+            proc_name = self.next_token.value
+            proc_dir = self.table.get_proc(proc_name,base,offset).value
+            call_dest = proc_dir - self.writer.get_current_position()
+            self.log.info('Llamando a %s (salto %s' % (proc_name,call_dest))
+            self.writer.call(call_dest) 
             self.read_token()
 
         elif self.next_token.type == 'begin':
@@ -210,14 +205,15 @@ class Parser():
             self.assert_type('then')
             self.read_token()
             self.parse_statement(base, offset)
-            self.writer.fixup(fixup_pos,self.writer.get_current_position())
+            self.writer.fixup(fixup_pos,self.writer.get_current_position(), 4)
         elif self.next_token.type == 'while':
             self.read_token()
+            condition_pos = self.writer.get_current_position() # TODO
             fixup_pos = self.parse_condition(base, offset)
             self.assert_type('do')
             self.read_token()
             self.parse_statement(base, offset)
-            self.writer.fixup(fixup_pos,self.writer.get_current_position())
+            self.writer.fixup(fixup_pos,self.writer.get_current_position(), 4)
         elif self.next_token.type == 'write':
             self.read_token()
             self.parse_write_args(base, offset)

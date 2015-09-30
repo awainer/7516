@@ -13,7 +13,11 @@ class CodeWriter():
         self.code += [0xbf, 0x00, 0x00, 0x00, 0x00]
         self.variable_pointer_location = len(self.code) - 4
         self.jumps = {'=': [0x74,0x05], '<>': [0x75,0x05], '<': [0x7c,0x05], '<=': [0x7e,0x05], '>': [0x7f,0x05], '>=': [0x7d,0x05]}
-
+        self.func_address = {'print_string_ebx_to_edx': 0x170, 
+                             'print_newline': 0x180, 
+                             'print_int_eax': 0x190, 
+                             'exit': 0x300, 
+                             'read': 0x310}
     def get_code(self):
         return self.code
 
@@ -22,7 +26,16 @@ class CodeWriter():
     
     def _int_to_one_byte(self, number):
         return list(np.array(np.int8(number)).data.tobytes())
-   
+
+    def _int_to_bytearray(self, number, size):
+        if size == 1:
+            return list(np.array(np.int8(number)).data.tobytes())
+        elif size == 2:
+            return list(np.array(np.int16(number)).data.tobytes())
+        elif size == 4:
+            return list(np.array(np.int32(number)).data.tobytes())
+        else:
+            raise ValueError('Arraysize no valido: %s' % size) 
     def mov_edi_literal(self, literal):
         self.code +=  [0xbf] + self._int_to_bytes(literal)
          
@@ -120,6 +133,7 @@ class CodeWriter():
     def get_current_position(self):
         return len(self.code)
     
-    def fixup(self,position, value):
-        for i in range(len(value)):
+    def fixup(self,position, value, size):
+        value = self._int_to_bytearray(value, size)
+        for i in range(size):
             self.code[position+i] = value[i]
