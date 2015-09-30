@@ -10,12 +10,17 @@ class CodeWriter():
     
     def __init__(self):
         self.code = header.header
-
+        self.code += [0xbf, 0x00, 0x00, 0x00, 0x00]
+        self.variable_pointer_location = len(self.code) - 4
+        
     def get_code(self):
         return self.code
 
     def _int_to_bytes(self, number):
         return list(np.array(np.int32(number)).data.tobytes())
+    
+    def _int_to_one_byte(self, number):
+        return list(np.array(np.int8(number)).data.tobytes())
    
     def mov_edi_literal(self, literal):
         self.code +=  [0xbf] + self._int_to_bytes(literal)
@@ -23,6 +28,9 @@ class CodeWriter():
     def mov_eax_edi_plus_literal(self, literal):
         self.code +=  [0x8b,0x87] + self._int_to_bytes(literal)
 
+    def mov_eax_literal(self, literal):
+        self.code +=  [0xb8] + self._int_to_bytes(literal)
+        
     def mov_edi_plus_literal_eax(self, literal):
         self.code +=  [0x89,0x87] + self._int_to_bytes(literal)        
 
@@ -63,37 +71,37 @@ class CodeWriter():
         self.code +=  [0xf8,0xd8]
 
     def test_al(self, literal):
-        self.code +=  [0xa8] +  list(np.array(np.int8(literal)).data.tobytes())
+        self.code +=  [0xa8] + self._int_to_one_byte(literal)
 
     def cmp_ebx_eax(self):
         self.code +=  [0x39,0xc3]
 
     def je_jz(self, literal):
-        self.code +=  [0x74] +  list(np.array(np.int8(literal)).data.tobytes())
+        self.code +=  [0x74] + self._int_to_one_byte(literal)
 
     def jne_jnz(self, literal):
-        self.code +=  [0x75] +  list(np.array(np.int8(literal)).data.tobytes())
+        self.code +=  [0x75] + self._int_to_one_byte(literal)
 
     def jg(self, literal):
-        self.code +=  [0x7f] +  list(np.array(np.int8(literal)).data.tobytes())
+        self.code +=  [0x7f] + self._int_to_one_byte(literal)
                 
     def jge(self, literal):
-        self.code +=  [0x7d] +  list(np.array(np.int8(literal)).data.tobytes())
+        self.code +=  [0x7d] + self._int_to_one_byte(literal)
 
     def jl(self, literal):
-        self.code +=  [0x7c] +  list(np.array(np.int8(literal)).data.tobytes())
+        self.code +=  [0x7c] + self._int_to_one_byte(literal)
 
     def jle(self, literal):
-        self.code +=  [0x7e] +  list(np.array(np.int8(literal)).data.tobytes())
+        self.code +=  [0x7e] + self._int_to_one_byte(literal)
 
     def jpo(self, literal):
-        self.code +=  [0x7b] +  list(np.array(np.int8(literal)).data.tobytes())
+        self.code +=  [0x7b] + self._int_to_one_byte(literal)
 
     def jmp(self, literal):
-        self.code +=  [0xe9] +  + self._int_to_bytes(literal)
+        self.code +=  [0xe9] + self._int_to_bytes(literal)
     
     def call(self, literal):
-        self.code +=  [0xe8] +  + self._int_to_bytes(literal)
+        self.code +=  [0xe8] + self._int_to_bytes(literal)
     
     def ret(self):
         self.code +=  [0xc3]

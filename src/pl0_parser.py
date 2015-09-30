@@ -6,6 +6,7 @@ Created on 23/8/2015
 
 import logging
 from symbol_table import SymbolTable
+from code_writer import CodeWriter
 
 class Parser():
     def __init__(self, scanner):
@@ -19,6 +20,7 @@ class Parser():
             formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
             hdlr.setFormatter(formatter)
             self.log.addHandler(hdlr)
+        self.writer = CodeWriter()
 
     
     def read_token(self):
@@ -90,7 +92,7 @@ class Parser():
             self.read_token()
             if self.next_token.type == "semicolon":
                 if not added:
-                    self.table.add_var(last_id, 0, base)
+                    self.table.add_var(last_id, base)
                 self.read_token()
                 break
             elif self.next_token.type == "ident":
@@ -99,19 +101,19 @@ class Parser():
                 added = False
                 self.log.info("Declaro variable " + self.next_token.value)
             elif self.next_token.type == "comma":
-                self.table.add_var(last_id, 0, base)
+                self.table.add_var(last_id, base)
                 added = True
                 self.log.info("Inicializo  variable %s con valor por defecto" % last_id)
-            elif self.next_token.type == "equal":
-                self.read_token()
-                if self.next_token.type == "number":
-                    self.log.info("Inicializo  variable %s con %s" % (last_id,
-                                                                      self.next_token.value))
-                    self.table.add_var(last_id, self.next_token.value, base)
-                    added = True
-                else:
-                    self.error("Se esperaba un numero, pero se encontro:" +
-                               self.next_token.type)
+            #----------------------------- elif self.next_token.type == "equal":
+                #--------------------------------------------- self.read_token()
+                #-------------------------- if self.next_token.type == "number":
+                    # self.log.info("Inicializo  variable %s con %s" % (last_id,
+                                                                      # self.next_token.value))
+                    #-- self.table.add_var(last_id, self.next_token.value, base)
+                    #---------------------------------------------- added = True
+            #------------------------------------------------------------- else:
+                #------- self.error("Se esperaba un numero, pero se encontro:" +
+                               #-------------------------- self.next_token.type)
             elif self.next_token.type == 'semicolon':
 
                 self.table.add_var(last_id, 0, base)
@@ -236,12 +238,20 @@ class Parser():
         self.log.debug('Parseando factor')
         if self.next_token.type == 'ident':
             try:
-                self.table.get_var(self.next_token.value, base, offset)
+                arg = self.table.get_var(self.next_token.value, base, offset)
+                self.writer.mov_eax_edi_plus_literal(arg.value)
+                self.writer.push_eax()
             except ValueError:
-                self.table.get_const(self.next_token.value, base, offset)
+                arg = self.table.get_const(self.next_token.value, base, offset)
+                self.writer.mov_eax_literal(arg.value)
+                self.writer.push_eax()
+                
             self.read_token()
             return
         if self.next_token.type == 'number':
+            self.writer.mov_eax_literal(self.next_token.value)
+            self.writer.push_eax()
+            
             self.read_token()
             return
         if self.next_token.type == 'open_parenthesis':

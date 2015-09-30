@@ -40,7 +40,7 @@ class Test(unittest.TestCase):
 
         
         procedure p2;
-        var x=1;
+        var x;
           x := 4;
         
         

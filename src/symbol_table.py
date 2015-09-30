@@ -9,9 +9,9 @@ import logging
 
 class SymbolTable(object):
 
-    CONST = np.uint32(0)
-    VAR = np.uint32(1)
-    PROCEDURE = np.uint32(2)
+    CONST = np.int32(0)
+    VAR = np.int32(1)
+    PROCEDURE = np.int32(2)
 
     
     
@@ -33,6 +33,7 @@ class SymbolTable(object):
 
     def reset(self):
         self. table = []
+        self.var_count = 0
 
     def duplicate_ident(self, ident):
         raise ValueError("Error, el identificador %s ya se encuentra definido." % ident)
@@ -44,10 +45,10 @@ class SymbolTable(object):
         self.check_defined(ident, initial_offset)
         self.insert(Symbol(ident.strip(), np.uint32(value), self.CONST),initial_offset)
 
-    def add_var(self, ident, value, initial_offset):
-        print('Adding var',ident)
+    def add_var(self, ident, initial_offset):
+        #print('Adding var',ident)
         self.check_defined(ident, initial_offset)
-        self.insert(Symbol(ident.strip(), np.uint32(value), self.VAR),initial_offset)
+        self.insert(Symbol(ident.strip(), self.var_count * 4, self.VAR),initial_offset)
         
     def add_procedure(self, ident, value, initial_offset):
         self.check_defined(ident, initial_offset)
@@ -56,9 +57,9 @@ class SymbolTable(object):
     ## TODO ver base
     def check_defined(self, ident, base):
         scope = self.table[base:]
-        print('Buscando %s en scope (base %s) : %s' % (ident, base,scope))
+        #print('Buscando %s en scope (base %s) : %s' % (ident, base,scope))
         for i in scope:
-            print('Comparando con ', i)
+            #print('Comparando con ', i)
             if i.ident == ident:
                 self.duplicate_ident(ident)
 
@@ -86,9 +87,9 @@ class SymbolTable(object):
             
     def lookup(self, ident,start,end):
         current_position = start
-        print('Lookup (%s)start: %s end: %s' % (ident,start,end))
-        print('Lookup Table (size %s): %s' % (len(self.table),self.table))
-        print('Buscando en %s' % self.table[end:start])
+        #print('Lookup (%s)start: %s end: %s' % (ident,start,end))
+        #print('Lookup Table (size %s): %s' % (len(self.table),self.table))
+        #print('Buscando en %s' % self.table[end:start])
         while True and current_position >= end:
             if self.table[current_position].ident == ident:
                 return self.table[current_position]
