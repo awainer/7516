@@ -12,7 +12,8 @@ class CodeWriter():
         self.code = header.header
         self.code += [0xbf, 0x00, 0x00, 0x00, 0x00]
         self.variable_pointer_location = len(self.code) - 4
-        
+        self.jumps = {'=': [0x74,0x05], '<>': [0x75,0x05], '<': [0x7c,0x05], '<=': [0x7e,0x05], '>': [0x7f,0x05], '>=': [0x7d,0x05]}
+
     def get_code(self):
         return self.code
 
@@ -105,3 +106,20 @@ class CodeWriter():
     
     def ret(self):
         self.code +=  [0xc3]
+        
+    def add_literals(self,literals):
+        self.code += literals
+    
+    def condition_jump(self,condition):
+        self.code += self.jumps.get(condition)
+        self.code += [0xe9]
+        fixup_pos = len(self.code)
+        self.code += [0,0,0,0]
+        return fixup_pos
+
+    def get_current_position(self):
+        return len(self.code)
+    
+    def fixup(self,position, value):
+        for i in range(len(value)):
+            self.code[position+i] = value[i]

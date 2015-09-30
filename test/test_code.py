@@ -17,6 +17,14 @@ class Test(unittest.TestCase):
         for i in range(len(expected)):
             self.assertEqual(inst[i], expected[i])
 
+    def test_fixup(self):
+        writer = CodeWriter()
+        writer.add_literals([0,0,0,0,0,0xbf,0,0,0,0])
+        fixval = [0x1,0x2,0x3,0x4]
+        writer.fixup(6, fixval)
+        code = writer.get_code()
+        for i in range(len(fixval)):
+            self.assertEqual(code[6+i], fixval[i])
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

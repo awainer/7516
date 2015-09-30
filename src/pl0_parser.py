@@ -206,16 +206,18 @@ class Parser():
 
         elif self.next_token.type == 'if':
             self.read_token()
-            self.parse_condition(base, offset)
+            fixup_pos = self.parse_condition(base, offset)
             self.assert_type('then')
             self.read_token()
             self.parse_statement(base, offset)
+            self.writer.fixup(fixup_pos,self.writer.get_current_position())
         elif self.next_token.type == 'while':
             self.read_token()
-            self.parse_condition(base, offset)
+            fixup_pos = self.parse_condition(base, offset)
             self.assert_type('do')
             self.read_token()
             self.parse_statement(base, offset)
+            self.writer.fixup(fixup_pos,self.writer.get_current_position())
         elif self.next_token.type == 'write':
             self.read_token()
             self.parse_write_args(base, offset)
@@ -264,36 +266,65 @@ class Parser():
         self.log.debug('Parseando termino')
         self.parse_factor(base, offset)
         while self.next_token.type in ['multiply', 'divide']:
+            last_op = self.next_token.type 
             # TODO ver que op es
             self.read_token()
             self.parse_factor(base, offset)
+            if last_op == 'multiply':
+                self.writer.pop_eax()
+                self.writer.pop_ebx()
+                self.writer.imul_ebx()
+                self.writer.push_eax()
+            elif last_op == 'divide':
+                self.writer.add_literals([0x58,0x5b,0x93,0x99,0xf7,0xfb,0x50]) # TODO pasar esto a asm
+            else:
+                raise ValueError('term must be a multiply or divide operation')
 
 
     def parse_expression(self, base, offset):
         self.log.debug("Parseando expression")
-        if self.next_token.type == 'add':
-            self.read_token()
-        elif self.next_token.type == 'substract':
+        unary_minus = False
+        if self.next_token.type == 'substract':
+            unary_minus = True
             self.read_token()
         self.parse_term(base, offset)
+        if unary_minus:
+            self.writer.pop_eax()
+            self.writer.neg_eax()
+            self.writer.push_eax()
         while self.next_token.type == 'substract' or self.next_token.type == 'add':
+            last_op = self.next_token.type
             self.read_token()
             self.parse_term(base, offset) 
+            if last_op == 'add':
+                self.writer.pop_eax()
+                self.writer.pop_ebx()
+                self.writer.add_eax_ebx()
+                self.writer.push_eax()
+            elif last_op == 'substract':
+                self.writer.add_literals([0x58,0x5b,0x93,0x29,0xd8,0x50])
 
     def parse_condition(self, base, offset):
+        
         self.log.debug("Parseando condition")
         if self.next_token.type == 'odd':
             self.read_token()
             self.parse_expression(base, offset)
+            self.writer.add_literals([0x58, 0xa8, 0x01, 0x7b, 0x05, 0xe9, 0x00, 0x00, 0x00, 0x00])
+            fixup_pos = self.writer.get_current_position() - 4
         else:
             self.read_token()
             self.parse_expression(base, offset)
+            
             if self.next_token.type == 'equal':
-                pass
+                last_rel = '='
             else:
-                self.assert_type('relation')            
+                self.assert_type('relation')
+                last_rel = self.next_token.value            
             self.read_token()
             self.parse_expression(base, offset)
-
+            self.writer.add_literals([0x58,0x5b,0x39,0xc3])
+            fixup_pos = self.writer.condition_jump(last_rel)
+        return fixup_pos
 
 
