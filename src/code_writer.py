@@ -21,6 +21,10 @@ class CodeWriter():
     def get_code(self):
         return self.code
 
+    def flush(self):
+        with open('/tmp/out.elf','w') as outfile:
+            for i in self.code:
+                outfile.write('%c' % i)
     def _int_to_bytes(self, number):
         return list(np.array(np.int32(number)).data.tobytes())
     

@@ -50,6 +50,7 @@ class Parser():
         self.parse_block(0)
         if not self.next_token.type == 'program_end':
             self.error("Se esperaba punto, se obtuvo: " + str(self.next_token))
+        self.writer.flush()
 
     def parse_const_decl(self, base, offset):
         last_id = ''
@@ -213,6 +214,7 @@ class Parser():
             self.assert_type('do')
             self.read_token()
             self.parse_statement(base, offset)
+            self.writer.jmp(self.writer.get_current_position() + 4 - condition_pos)
             self.writer.fixup(fixup_pos,self.writer.get_current_position(), 4)
         elif self.next_token.type == 'write':
             self.read_token()
@@ -263,7 +265,6 @@ class Parser():
         self.parse_factor(base, offset)
         while self.next_token.type in ['multiply', 'divide']:
             last_op = self.next_token.type 
-            # TODO ver que op es
             self.read_token()
             self.parse_factor(base, offset)
             if last_op == 'multiply':
