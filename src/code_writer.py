@@ -5,6 +5,7 @@ Created on 28 de set. de 2015
 '''
 import numpy as np
 import header
+import logging
 
 class CodeWriter():
     
@@ -18,10 +19,27 @@ class CodeWriter():
                              'print_int_eax': 0x190, 
                              'exit': 0x300, 
                              'read': 0x310}
+
+        self.log = logging.getLogger('writer')
+        self.log.setLevel(logging.DEBUG)
+
+        #--------------------------------------------- self.log.addHandler(hdlr)
+                
     def get_code(self):
         return self.code
 
-    def flush(self):
+    def flush(self, variable_count):
+        # fixup del puntero a las variables
+        self.fixup(self.variable_pointer_location, len(self.code), 4)
+
+            # espacio para las variables
+        for _ in range(variable_count):
+            self.code += [0,0,0,0]
+            self.log.info('Agregando var')
+        # FileSize
+        self.fixup(68, len(self.code), 4)
+        # MemorySize
+        self.fixup(68, len(self.code), 4)
         with open('/tmp/out.elf','w') as outfile:
             for i in self.code:
                 outfile.write('%c' % i)
@@ -40,94 +58,124 @@ class CodeWriter():
             return list(np.array(np.int32(number)).data.tobytes())
         else:
             raise ValueError('Arraysize no valido: %s' % size) 
+
     def mov_edi_literal(self, literal):
+        self.log.info('[%s] mov edi,%s' % (len(self.code),literal))
         self.code +=  [0xbf] + self._int_to_bytes(literal)
          
     def mov_eax_edi_plus_literal(self, literal):
+        self.log.info('[%s] mov eax,[edi+%s]' % (len(self.code),literal))
         self.code +=  [0x8b,0x87] + self._int_to_bytes(literal)
 
     def mov_eax_literal(self, literal):
+        self.log.info('[%s] mov eax,%s' % (len(self.code),literal))
         self.code +=  [0xb8] + self._int_to_bytes(literal)
         
     def mov_edi_plus_literal_eax(self, literal):
+        self.log.info('[%s] mov [edi+%s],eax' % (len(self.code),literal))
         self.code +=  [0x89,0x87] + self._int_to_bytes(literal)        
 
     def mov_ecx_literal(self, literal):
+        self.log.info('[%s] mov ecx,%s' % (len(self.code),literal))
         self.code +=  [0xb9] + self._int_to_bytes(literal)
     
     def mov_edx_literal(self, literal):
+        self.log.info('[%s] mov edx,%s' % (len(self.code),literal))
         self.code +=  [0xba] + self._int_to_bytes(literal)
         
     def xchg_eax_ebx(self):
+        self.log.info('[%s] xchg eax,ebx' % len(self.code))
         self.code +=  [0x93]
     
     def push_eax(self):
+        self.log.info('[%s] push eax' % len(self.code))
         self.code +=  [0x50]
         
     def pop_eax(self):
+        self.log.info('[%s] pop eax' % len(self.code))
         self.code +=  [0x58]
     
     def pop_ebx(self):
+        self.log.info('[%s] pop ebx' % len(self.code))
         self.code +=  [0x5b]
         
     def add_eax_ebx(self):
+        self.log.info('[%s] add eax,ebx' % len(self.code))
         self.code +=  [0x01,0xd8]
                             
     def sub_eax_ebx(self):
+        self.log.info('[%s] sub eax,ebx' % len(self.code))
         self.code +=  [0x29,0xd8]
 
     def imul_ebx(self):
+        self.log.info('[%s] imul ebx' % len(self.code))
         self.code +=  [0xf7,0xeb]
 
     def idiv_ebx(self):
+        self.log.info('[%s] idiv ebx' % len(self.code))
         self.code +=  [0xf7,0xfb]
 
     def cdq(self):
+        self.log.info('[%s] cdq' % len(self.code))
         self.code +=  [0x99]
 
     def neg_eax(self):
+        self.log.info('[%s] neg  eax' % len(self.code))
         self.code +=  [0xf8,0xd8]
 
     def test_al(self, literal):
+        self.log.info('[%s] test al' % len(self.code))
         self.code +=  [0xa8] + self._int_to_one_byte(literal)
 
     def cmp_ebx_eax(self):
+        self.log.info('[%s] cmp ebx,eax' % len(self.code))
         self.code +=  [0x39,0xc3]
 
     def je_jz(self, literal):
+        self.log.info('[%s] je %s' % (len(self.code),literal))
         self.code +=  [0x74] + self._int_to_one_byte(literal)
 
     def jne_jnz(self, literal):
+        self.log.info('[%s] jne %s' % (len(self.code),literal))
         self.code +=  [0x75] + self._int_to_one_byte(literal)
 
     def jg(self, literal):
+        self.log.info('[%s] jg %s' % (len(self.code),literal))
         self.code +=  [0x7f] + self._int_to_one_byte(literal)
                 
     def jge(self, literal):
+        self.log.info('[%s] jge %s' % (len(self.code),literal))
         self.code +=  [0x7d] + self._int_to_one_byte(literal)
 
     def jl(self, literal):
+        self.log.info('[%s] jle %s' % (len(self.code),literal))
         self.code +=  [0x7c] + self._int_to_one_byte(literal)
 
     def jle(self, literal):
+        self.log.info('[%s] jle %s' % (len(self.code),literal))
         self.code +=  [0x7e] + self._int_to_one_byte(literal)
 
     def jpo(self, literal):
+        self.log.info('[%s] jpo %s' % (len(self.code),literal))
         self.code +=  [0x7b] + self._int_to_one_byte(literal)
 
     def jmp(self, literal):
+        self.log.info('[%s] jmp %s' % (len(self.code),literal))
         self.code +=  [0xe9] + self._int_to_bytes(literal)
     
     def call(self, literal):
+        self.log.info('[%s] call %s' % (len(self.code),literal))
         self.code +=  [0xe8] + self._int_to_bytes(literal)
     
     def ret(self):
+        self.log.info('[%s] ret' % len(self.code))
         self.code +=  [0xc3]
         
     def add_literals(self,literals):
         self.code += literals
     
     def condition_jump(self,condition):
+        self.log.info('[%s] %s %s' % (len(self.code),self.jumps.get(condition)))
         self.code += self.jumps.get(condition)
         self.code += [0xe9]
         fixup_pos = len(self.code)

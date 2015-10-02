@@ -50,7 +50,7 @@ class Parser():
         self.parse_block(0)
         if not self.next_token.type == 'program_end':
             self.error("Se esperaba punto, se obtuvo: " + str(self.next_token))
-        self.writer.flush()
+        self.writer.flush(self.table.var_count)
 
     def parse_const_decl(self, base, offset):
         last_id = ''
