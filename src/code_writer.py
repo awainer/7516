@@ -6,6 +6,7 @@ Created on 28 de set. de 2015
 import numpy as np
 import header
 import logging
+from io import BytesIO
 
 class CodeWriter():
     
@@ -22,13 +23,18 @@ class CodeWriter():
 
         self.log = logging.getLogger('writer')
         self.log.setLevel(logging.DEBUG)
-
-        #--------------------------------------------- self.log.addHandler(hdlr)
+        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+        hdlr = logging.FileHandler('/tmp/writer.log')
+        #------------------------------------------ hdlr.setFormatter(formatter)
+        self.log.addHandler(hdlr)
+        
                 
     def get_code(self):
         return self.code
 
     def flush(self, variable_count):
+        self.log.debug('debug')
+        self.log.error('error')
         # fixup del puntero a las variables
         self.fixup(self.variable_pointer_location, len(self.code), 4)
 
@@ -39,10 +45,14 @@ class CodeWriter():
         # FileSize
         self.fixup(68, len(self.code), 4)
         # MemorySize
-        self.fixup(68, len(self.code), 4)
-        with open('/tmp/out.elf','w') as outfile:
-            for i in self.code:
-                outfile.write('%c' % i)
+        self.fixup(72, len(self.code), 4)
+        with open('/tmp/out.elf','wb') as outfile:
+            outfile.write(bytearray(self.code))
+        pos=0
+        for i in self.code:
+            self.log.warning("Out: offset %s value %s" % (pos,hex(i)))
+            pos+=1
+
     def _int_to_bytes(self, number):
         return list(np.array(np.int32(number)).data.tobytes())
     
@@ -188,4 +198,5 @@ class CodeWriter():
     def fixup(self,position, value, size):
         value = self._int_to_bytearray(value, size)
         for i in range(size):
+            self.log.warning("Fixup: %s=%s (%s)" %(position+i,value[i],hex(value[i])))
             self.code[position+i] = value[i]
