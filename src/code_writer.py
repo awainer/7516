@@ -12,6 +12,7 @@ class CodeWriter():
     
     def __init__(self):
         self.code = header.header
+        self.load_address = 0x8048000
         self.code += [0xbf, 0x00, 0x00, 0x00, 0x00]
         self.variable_pointer_location = len(self.code) - 4
         self.jumps = {'=': [0x74,0x05], '<>': [0x75,0x05], '<': [0x7c,0x05], '<=': [0x7e,0x05], '>': [0x7f,0x05], '>=': [0x7d,0x05]}
@@ -35,19 +36,26 @@ class CodeWriter():
     def flush(self, variable_count):
         self.log.debug('debug')
         self.log.error('error')
-        # fixup del puntero a las variables
-        self.fixup(self.variable_pointer_location, len(self.code), 4)
 
             # espacio para las variables
         for _ in range(variable_count):
             self.code += [0,0,0,0]
             self.log.info('Agregando var')
+        # salto incondicional a la int que termina el proceso
+        # esos 5 son los que ocupa esta instruccion, hay que contar desde ahi 
+        self.jmp( 0x300 - len(self.code) - 5)
+        # hasta aca llega el codigo ejecutable
+         
+        # fixup del puntero a las variables (EDI), salto absoluto
+        self.fixup(self.variable_pointer_location, len(self.code) + self.load_address, 4)
         # FileSize
-        self.fixup(68, len(self.code), 4)
+        self.fixup(68, len(self.code), 4, signed=False)
         # MemorySize
-        self.fixup(72, len(self.code), 4)
+        self.fixup(72, len(self.code), 4, signed=False)
+
         with open('/tmp/out.elf','wb') as outfile:
             outfile.write(bytearray(self.code))
+
         pos=0
         for i in self.code:
             self.log.warning("Out: offset %s value %s" % (pos,hex(i)))
@@ -66,6 +74,16 @@ class CodeWriter():
             return list(np.array(np.int16(number)).data.tobytes())
         elif size == 4:
             return list(np.array(np.int32(number)).data.tobytes())
+        else:
+            raise ValueError('Arraysize no valido: %s' % size) 
+
+    def _unsigned_int_to_bytearray(self, number, size):
+        if size == 1:
+            return list(np.array(np.uint8(number)).data.tobytes())
+        elif size == 2:
+            return list(np.array(np.uint16(number)).data.tobytes())
+        elif size == 4:
+            return list(np.array(np.uint32(number)).data.tobytes())
         else:
             raise ValueError('Arraysize no valido: %s' % size) 
 
@@ -195,8 +213,11 @@ class CodeWriter():
     def get_current_position(self):
         return len(self.code)
     
-    def fixup(self,position, value, size):
-        value = self._int_to_bytearray(value, size)
+    def fixup(self,position, value, size, signed=True):
+        if signed:
+            value = self._int_to_bytearray(value, size)
+        else:
+            value = self._unsigned_int_to_bytearray(value, size)
         for i in range(size):
             self.log.warning("Fixup: %s=%s (%s)" %(position+i,value[i],hex(value[i])))
             self.code[position+i] = value[i]
