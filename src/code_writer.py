@@ -209,14 +209,15 @@ class CodeWriter():
         self.call(self.func_address['print_newline'])
 
     def write_string(self, string):
-        string_position = len(self.code) - self.text_section_start + 15 # 5+5+5
+        string_position = len(self.code)  + self.load_address + 20 # 5+5+5
         self.mov_ecx_literal(string_position) 
         self.mov_edx_literal(len(string)) # 5 bytes
         self.call(self.func_address['print_string_ebx_to_edx'] - len(self.code) - 5) # 5 bytes
-        fixup_address = len(self.code)
+        fixup_address = len(self.code) + 1
         self.jmp(0) # 5 bytes
+        self.log.warning("[%s] [%s]" % ( len(self.code),[ hex(ord(x)) for x in string ]))
         self.code += [ ord(x) for x in string ]
-        self.fixup(fixup_address, len(self.code), 4)
+        self.fixup(fixup_address, len(string), 4)
 
     def condition_jump(self,condition):
         self.log.info('[%s] %s %s' % (len(self.code),self.jumps.get(condition)))
