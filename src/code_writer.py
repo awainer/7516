@@ -13,6 +13,7 @@ class CodeWriter():
     def __init__(self):
         self.code = header.header
         self.load_address = 0x8048000
+        self.text_section_start = 224 # pagina 22 del apunte
         self.code += [0xbf, 0x00, 0x00, 0x00, 0x00]
         self.variable_pointer_location = len(self.code) - 4
         self.jumps = {'=': [0x74,0x05], '<>': [0x75,0x05], '<': [0x7c,0x05], '<=': [0x7e,0x05], '>': [0x7f,0x05], '>=': [0x7d,0x05]}
@@ -38,9 +39,6 @@ class CodeWriter():
         self.log.error('error')
 
             # espacio para las variables
-        for _ in range(variable_count):
-            self.code += [0,0,0,0]
-            self.log.info('Agregando var')
         # salto incondicional a la int que termina el proceso
         # esos 5 son los que ocupa esta instruccion, hay que contar desde ahi 
         self.jmp( 0x300 - len(self.code) - 5)
@@ -48,11 +46,16 @@ class CodeWriter():
          
         # fixup del puntero a las variables (EDI), salto absoluto
         self.fixup(self.variable_pointer_location, len(self.code) + self.load_address, 4)
+
+        for _ in range(variable_count):
+            self.code += [0,0,0,0]
+            self.log.info('Agregando var')
         # FileSize
         self.fixup(68, len(self.code), 4, signed=False)
         # MemorySize
         self.fixup(72, len(self.code), 4, signed=False)
-
+        # Text size
+        self.fixup(201, len(self.code) - self.text_section_start , 4, signed=False)
         with open('/tmp/out.elf','wb') as outfile:
             outfile.write(bytearray(self.code))
 

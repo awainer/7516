@@ -49,6 +49,7 @@ class SymbolTable(object):
         #print('Adding var',ident)
         self.check_defined(ident, initial_offset)
         self.insert(Symbol(ident.strip(), self.var_count * 4, self.VAR),initial_offset)
+        self.var_count+=1
         
     def add_procedure(self, ident, value, initial_offset):
         self.check_defined(ident, initial_offset)
