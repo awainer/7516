@@ -150,14 +150,16 @@ class Parser():
     def parse_writeln_args(self, base, offset):
         if self.next_token.type == 'open_parenthesis':
             self.parse_write_args(base, offset)
-
+            self.writer.write_newline()
     def parse_write_args(self,base, offset):
         self.assert_type('open_parenthesis')
         self.read_token()
         if self.next_token.type == 'string':
+            self.writer.write_string(self.next_token.value)
             self.read_token()
         else:
             self.parse_expression(base, offset)
+            # TODO
 
         while not self.next_token.type == 'close_parenthesis':
             self.assert_type('comma')

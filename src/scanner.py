@@ -64,7 +64,11 @@ class Scanner(object):
     t_ignore = " \t"
     t_writeln = "writeln"
     t_write = "write"
-    t_string = "'.*'"
+    def t_string(self, t):
+        r"'.*'"
+        # le saco las comillas
+        t.value = t.value.replace("'",'')
+        return t
     t_program_end = "\."
 
 
