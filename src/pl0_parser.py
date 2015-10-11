@@ -127,6 +127,7 @@ class Parser():
         self.parse_block(base+offset)
         self.assert_type('semicolon')
         self.read_token()
+        self.writer.ret()
         return offset
 
     def parse_block(self, base):
@@ -192,7 +193,7 @@ class Parser():
             self.assert_type('ident')
             proc_name = self.next_token.value
             proc_dir = self.table.get_proc(proc_name,base,offset).value
-            call_dest = proc_dir - self.writer.get_current_position()
+            call_dest = proc_dir -  self.writer.get_current_position() - 5
             self.log.info('Llamando a %s (salto %s' % (proc_name,call_dest))
             self.writer.call(call_dest) 
             self.read_token()
