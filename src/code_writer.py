@@ -6,7 +6,7 @@ Created on 28 de set. de 2015
 import numpy as np
 import header
 import logging
-from io import BytesIO
+
 
 class CodeWriter():
     
@@ -27,7 +27,7 @@ class CodeWriter():
         self.log.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
         hdlr = logging.FileHandler('/tmp/writer.log')
-        #------------------------------------------ hdlr.setFormatter(formatter)
+        hdlr.setFormatter(formatter)
         self.log.addHandler(hdlr)
         
                 
@@ -35,18 +35,18 @@ class CodeWriter():
         return self.code
 
     def flush(self, variable_count):
-        self.log.debug('debug')
-        self.log.error('error')
+        
 
-            # espacio para las variables
         # salto incondicional a la int que termina el proceso
         # esos 5 son los que ocupa esta instruccion, hay que contar desde ahi 
         self.jmp( 0x300 - len(self.code) - 5)
-        # hasta aca llega el codigo ejecutable
+
+        self.log.info('Fin de parse de codigo, pasando a variables y fixups generales.')
          
         # fixup del puntero a las variables (EDI), salto absoluto
         self.fixup(self.variable_pointer_location, len(self.code) + self.load_address, 4)
 
+        # espacio para las variables
         for _ in range(variable_count):
             self.code += [0,0,0,0]
             self.log.info('Agregando var')
@@ -193,6 +193,7 @@ class CodeWriter():
     def jmp(self, literal):
         self.log.info('[%s] jmp %s' % (len(self.code),literal))
         self.code +=  [0xe9] + self._int_to_bytes(literal)
+        return len(self.code) - 4
     
     def call(self, literal):
         self.log.info('[%s] call %s' % (len(self.code),literal))
@@ -206,7 +207,14 @@ class CodeWriter():
         self.code += literals
         
     def write_newline(self):
-        self.call(self.func_address['print_newline'])
+        self.call(self.func_address['print_newline']  - len(self.code) - 5)
+        
+    def write_number(self):
+        self.pop_eax()
+        self.call(self.func_address['print_int_eax'] - len(self.code) - 5)
+
+    def readln(self):
+        self.call(self.func_address['read'] - len(self.code) - 5)
 
     def write_string(self, string):
         string_position = len(self.code)  + self.load_address + 20 # 5+5+5
@@ -220,7 +228,7 @@ class CodeWriter():
         self.fixup(fixup_address, len(string), 4)
 
     def condition_jump(self,condition):
-        self.log.info('[%s] %s %s' % (len(self.code),self.jumps.get(condition)))
+        self.log.info('[%s] %s' % (len(self.code),self.jumps.get(condition)))
         self.code += self.jumps.get(condition)
         self.code += [0xe9]
         fixup_pos = len(self.code)

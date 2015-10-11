@@ -132,7 +132,8 @@ class Parser():
     def parse_block(self, base):
         self.log.debug('Parseando bloque, base: ' + str(base))
         offset = 0
-        
+        fixup_pos = self.writer.jmp(0)
+        fixup_address = self.writer.get_current_position()
         if self.next_token.type == 'const':
             offset = self.parse_const_decl(base, offset)
 
@@ -142,7 +143,8 @@ class Parser():
         while self.next_token.type == 'procedure':
             offset+=1
             self.parse_procedure_decl(base, offset)
-
+        
+        self.writer.fixup(fixup_pos, self.writer.get_current_position() - fixup_address, 4, signed=True)
         self.parse_statement(base, offset)
         self.log.debug('Fin parseando bloque, base %s offset %s' % (base,offset))
         return offset;
@@ -159,15 +161,17 @@ class Parser():
             self.read_token()
         else:
             self.parse_expression(base, offset)
-            # TODO
+            self.writer.write_number()
 
         while not self.next_token.type == 'close_parenthesis':
             self.assert_type('comma')
             self.read_token()
             if self.next_token.type == 'string':
+                self.writer.write_string(self.next_token.value)
                 self.read_token()
             else:
-                self.parse_expression(base, offset)         
+                self.parse_expression(base, offset)
+                self.writer.write_number()         
         self.read_token()
 
     def parse_statement(self, base, offset):
@@ -205,19 +209,21 @@ class Parser():
         elif self.next_token.type == 'if':
             self.read_token()
             fixup_pos = self.parse_condition(base, offset)
+            jump_distance = self.writer.get_current_position()
             self.assert_type('then')
             self.read_token()
             self.parse_statement(base, offset)
-            self.writer.fixup(fixup_pos,self.writer.get_current_position(), 4)
+            self.writer.fixup(fixup_pos, self.writer.get_current_position() - jump_distance , 4)
         elif self.next_token.type == 'while':
             self.read_token()
             condition_pos = self.writer.get_current_position() # TODO
             fixup_pos = self.parse_condition(base, offset)
+            jump_distance = self.writer.get_current_position()
             self.assert_type('do')
             self.read_token()
             self.parse_statement(base, offset)
             self.writer.jmp(self.writer.get_current_position() + 4 - condition_pos)
-            self.writer.fixup(fixup_pos,self.writer.get_current_position(), 4)
+            self.writer.fixup(fixup_pos, self.writer.get_current_position() - jump_distance , 4)
         elif self.next_token.type == 'write':
             self.read_token()
             self.parse_write_args(base, offset)
@@ -230,7 +236,11 @@ class Parser():
             self.read_token()
             self.assert_type('ident')
             self.log.info('Leyendo en %s' % self.next_token.value)
-            self.table.get_var(self.next_token.value, base, offset)
+
+            var_position = self.table.get_var(self.next_token.value, base, offset).value
+            self.writer.readln() # esto  deja en EAX el numero leido 
+            self.writer.mov_edi_plus_literal_eax(var_position) # mov edi+offset,eax            
+
             self.read_token()
             self.assert_type('close_parenthesis')
             self.read_token()
@@ -312,7 +322,8 @@ class Parser():
             self.writer.add_literals([0x58, 0xa8, 0x01, 0x7b, 0x05, 0xe9, 0x00, 0x00, 0x00, 0x00])
             fixup_pos = self.writer.get_current_position() - 4
         else:
-            self.read_token()
+
+            # primer expresion
             self.parse_expression(base, offset)
             
             if self.next_token.type == 'equal':
@@ -321,9 +332,11 @@ class Parser():
                 self.assert_type('relation')
                 last_rel = self.next_token.value            
             self.read_token()
+            # segunda expresion
             self.parse_expression(base, offset)
             self.writer.add_literals([0x58,0x5b,0x39,0xc3])
             fixup_pos = self.writer.condition_jump(last_rel)
+            
         return fixup_pos
 
 
