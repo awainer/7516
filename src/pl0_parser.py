@@ -223,7 +223,7 @@ class Parser():
             self.assert_type('do')
             self.read_token()
             self.parse_statement(base, offset)
-            self.writer.jmp(self.writer.get_current_position() + 4 - condition_pos)
+            self.writer.jmp( condition_pos - self.writer.get_current_position() - 5 )
             self.writer.fixup(fixup_pos, self.writer.get_current_position() - jump_distance , 4)
         elif self.next_token.type == 'write':
             self.read_token()
