@@ -153,7 +153,9 @@ class Parser():
     def parse_writeln_args(self, base, offset):
         if self.next_token.type == 'open_parenthesis':
             self.parse_write_args(base, offset)
-            self.writer.write_newline()
+        self.writer.write_newline()
+
+            
     def parse_write_args(self,base, offset):
         self.assert_type('open_parenthesis')
         self.read_token()
