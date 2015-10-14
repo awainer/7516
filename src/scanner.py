@@ -65,7 +65,7 @@ class Scanner(object):
     t_writeln = "writeln"
     t_write = "write"
     def t_string(self, t):
-        r"'.*'"
+        r"'[^']+'"
         # le saco las comillas
         t.value = t.value.replace("'",'')
         return t
