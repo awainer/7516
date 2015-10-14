@@ -9,7 +9,7 @@ from symbol_table import SymbolTable
 from code_writer import CodeWriter
 
 class Parser():
-    def __init__(self, scanner):
+    def __init__(self, scanner,output_file=None):
         self.scanner = scanner
         self.tokens = scanner.tokens
         self.log = logging.getLogger('parser')
@@ -20,7 +20,7 @@ class Parser():
             formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
             hdlr.setFormatter(formatter)
             self.log.addHandler(hdlr)
-        self.writer = CodeWriter()
+        self.writer = CodeWriter(out_file=output_file)
 
     
     def read_token(self):

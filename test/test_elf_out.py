@@ -41,6 +41,7 @@ BEGIN
 END.
 
              '''
+        #WRITE ('RAIZ CUADRADA DE ', N, ': ');
         txt.write(p)
         txt.seek(0)
         scanner = Scanner(txt)
