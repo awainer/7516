@@ -152,7 +152,7 @@ class CodeWriter():
 
     def neg_eax(self):
         self.log.info('[%s] neg  eax' % len(self.code))
-        self.code +=  [0xf8,0xd8]
+        self.code +=  [0xf7,0xd8]
 
     def test_al(self, literal):
         self.log.info('[%s] test al' % len(self.code))
