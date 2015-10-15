@@ -7,6 +7,8 @@ Created on 23/8/2015
 import logging
 from symbol_table import SymbolTable
 from code_writer import CodeWriter
+from null_writer import NullWriter
+from scanner import DummyToken
 
 class Parser():
     def __init__(self, scanner,output_file=None):
@@ -33,8 +35,9 @@ class Parser():
         try:
             self.parse_program()
         except ValueError as e:
-            print('Ultimo token %s' %(self.next_token))
-            raise e
+            print (e)
+            #print('Ultimo token %s' %(self.next_token))
+            #raise e
         self.log.info("Fin parse")
         return True
 
@@ -43,7 +46,8 @@ class Parser():
         raise ValueError(s)
 
     def error_expected(self, expected):
-        raise ValueError("Se esperaba %s se recibio %s" % (expected, self.next_token))
+        print("Se esperaba %s se recibio %s" % (expected, self.next_token.value))
+
 
     def parse_program(self):
         self.read_token()
@@ -85,6 +89,9 @@ class Parser():
     def assert_type(self, expected_type):
         if not self.next_token.type == expected_type:
             self.error_expected(expected_type)
+            #print(self.next_token.type)
+            return False
+        return True
 
     def parse_var_decl(self, base, offset):
         last_id = ''
@@ -204,8 +211,8 @@ class Parser():
             self.read_token()
             self.parse_statement(base, offset)
             while not self.next_token.type == 'end':
-                self.assert_type('semicolon')
-                self.read_token()
+                if self.assert_type('semicolon'):
+                    self.read_token()
                 self.parse_statement(base, offset)
             self.read_token()
 
@@ -213,8 +220,8 @@ class Parser():
             self.read_token()
             fixup_pos = self.parse_condition(base, offset)
             jump_distance = self.writer.get_current_position()
-            self.assert_type('then')
-            self.read_token()
+            if self.assert_type('then'):
+                self.read_token()
             self.parse_statement(base, offset)
             self.writer.fixup(fixup_pos, self.writer.get_current_position() - jump_distance , 4)
         elif self.next_token.type == 'while':

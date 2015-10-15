@@ -14,31 +14,26 @@ class Test(unittest.TestCase):
     def test_out(self):
         txt = StringIO()
         p = '''
-VAR R, N;
+VAR BASE, EXPO, RESU;
 
-PROCEDURE INICIALIZAR;
-CONST UNO = 1;
-R := -(-UNO);
-
-PROCEDURE RAIZ;
-BEGIN
-  CALL INICIALIZAR;
-  WHILE R * R < N DO R := R + 1
-END;
+PROCEDURE POT;
+IF EXPO > 0 THEN
+   BEGIN
+        RESU := RESU * BASE;
+        EXPO := EXPO - 1;
+        CALL POT
+   END;
 
 BEGIN
-  WRITE ('N: '); READLN (N);
-  WRITE ('RAIZ CUADRADA DE ', N, ': ');
-  IF N < 0 THEN WRITE ('ERROR');
-  IF N = 0 THEN WRITE (0);
-  IF N > 0 THEN
-    BEGIN
-      CALL RAIZ;
-      IF R*R<>N THEN WRITE (R - 1, '..');
-      WRITE (R);
-    END;
-  WRITELN
+     WRITE ('BASE: '); READLN(BASE);
+     WRITE ('EXPONENTE: '); READLN(EXPO);
+     RESU := 1;
+     CALL POT;
+     IF EXPO < 0  THEN RESU := 0;
+     WRITELN ('RESULTADO: ', RESU);
+     WRITELN
 END.
+
 
              '''
         #WRITE ('RAIZ CUADRADA DE ', N, ': ');

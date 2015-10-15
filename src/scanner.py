@@ -1,12 +1,17 @@
 from ply import lex
 
 
+class DummyToken():
+    def __init__(self,token_type):
+        self.type = token_type
+        self.value = '*****DUMMY****'
+
 class Scanner(object):
 
     # Lista de tokens
     tokens = ["number", "equal", "relation", "comma", "semicolon", "assign", "add", "substract",
               "multiply", "divide", "open_parenthesis", "close_parenthesis", "ident", "string",
-              "program_end", "newline", ]
+              "program_end", "newline", "doublequoted_string"]
     # http://stackoverflow.com/questions/5022129/ply-lex-parsing-problem
     reserved = ['const', 'var', 'procedure', 'call', 'if', 'then', 'while', 'do', 'begin', 'end',
                 'odd', 'write', 'writeln', 'readln']
@@ -64,11 +69,22 @@ class Scanner(object):
     t_ignore = " \t"
     t_writeln = "writeln"
     t_write = "write"
+
     def t_string(self, t):
         r"'[^']+'"
         # le saco las comillas
         t.value = t.value.replace("'",'')
         return t
+    
+    def t_doublequoted_string(self, t):
+        r'''"[^"]+"'''
+        # le saco las comillas
+        print('Advertencia, se encontro string entre comillas dobles, deben usarse comillas simples:' + t.value)
+        t.value = t.value.replace('"','')
+        t.type = 'string'
+        return t
+
+    
     t_program_end = "\."
 
 
@@ -84,5 +100,6 @@ class Scanner(object):
 
     def t_error(self, t):
         raise TypeError("Unknown text '%s' at %s" % (t.value, t.lexer.lineno))
+
 
 
