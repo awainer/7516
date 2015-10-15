@@ -6,9 +6,12 @@ Created on Sep 10, 2015
 import unittest
 import scanner
 import pl0_parser
-
+import  importlib
 class Test(unittest.TestCase):
 
+    def setUp(self):
+        importlib.reload(pl0_parser)
+        importlib.reload(scanner)
 
     def test_ejemplo_0(self):
         my_scanner = scanner.Scanner(open("../ejemplos/BIEN-00.PL0", 'r'))
@@ -48,6 +51,7 @@ class Test(unittest.TestCase):
 
     def test_ejemplo_7(self):
         my_scanner = scanner.Scanner(open("../ejemplos/BIEN-07.PL0", 'r'))
+
         parser = pl0_parser.Parser(my_scanner,output_file='BIEN-07.ELF')
         parser.parse()
 

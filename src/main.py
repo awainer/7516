@@ -1,8 +1,10 @@
 import scanner
-scanner = scanner.Scanner("../ejemplos/BIEN-00.PL0") 
+import pl0_parser
+import sys
+import os
 
-token = scanner.next_token()
-#------------------------------------------------------------------ while token:
-    #--------------------------------------------------------------- print token
-    #---------------------------------------------- token = scanner.next_token()
+filename = sys.argv[1]
+my_scanner = scanner.Scanner(open(filename, 'r'))
+parser = pl0_parser.Parser(my_scanner,output_file=os.path.basename(filename) + '.elf')
+parser.parse()
 
