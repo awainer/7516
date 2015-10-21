@@ -88,6 +88,8 @@ class SymbolTable(object):
             
     def lookup(self, ident,start,end):
         current_position = start
+        if current_position > len(self.table) -1:
+            return 
         #print('Lookup (%s)start: %s end: %s' % (ident,start,end))
         #print('Lookup Table (size %s): %s' % (len(self.table),self.table))
         #print('Buscando en %s' % self.table[end:start])

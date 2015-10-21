@@ -47,6 +47,7 @@ class Parser():
 
     def error_expected(self, expected):
         print("Se esperaba %s se recibio %s" % (expected, self.next_token.value))
+        self.writer = NullWriter()
 
 
     def parse_program(self):
@@ -100,7 +101,11 @@ class Parser():
             self.read_token()
             if self.next_token.type == "semicolon":
                 if not added:
-                    self.table.add_var(last_id, base)
+                    try:
+                        self.table.add_var(last_id, base)
+                    except ValueError:
+                        print("Error, identificador duplicado: " + last_id)
+                        self.writer = NullWriter()
                 self.read_token()
                 break
             elif self.next_token.type == "ident":
@@ -186,74 +191,80 @@ class Parser():
 
     def parse_statement(self, base, offset):
         self.log.debug('Parseando statement')
-        if self.next_token.type == 'ident':
-            self.log.info('Asignando valor a %s' % self.next_token.value)
-            var_position = self.table.get_var(self.next_token.value, base, offset).value
-            self.read_token()
-            # last_id = self.last_token.value
-            self.assert_type('assign')
-            self.read_token()
-            self.parse_expression(base, offset)
-            self.writer.pop_eax()
-            self.writer.mov_edi_plus_literal_eax(var_position) # mov edi+offset,eax
-
-        elif self.next_token.type == 'call':
-            self.read_token()
-            self.assert_type('ident')
-            proc_name = self.next_token.value
-            proc_dir = self.table.get_proc(proc_name,base,offset).value
-            call_dest = proc_dir -  self.writer.get_current_position() - 5
-            self.log.info('Llamando a %s (salto %s' % (proc_name,call_dest))
-            self.writer.call(call_dest) 
-            self.read_token()
-
-        elif self.next_token.type == 'begin':
-            self.read_token()
-            self.parse_statement(base, offset)
-            while not self.next_token.type == 'end':
-                if self.assert_type('semicolon'):
+        try:
+            if self.next_token.type == 'ident':
+                self.log.info('Asignando valor a %s' % self.next_token.value)
+                var_position = self.table.get_var(self.next_token.value, base, offset).value
+                self.read_token()
+                # last_id = self.last_token.value
+                self.assert_type('assign')
+                self.read_token()
+                self.parse_expression(base, offset)
+                self.writer.pop_eax()
+                self.writer.mov_edi_plus_literal_eax(var_position) # mov edi+offset,eax
+    
+            elif self.next_token.type == 'call':
+                self.read_token()
+                self.assert_type('ident')
+                proc_name = self.next_token.value
+                proc_dir = self.table.get_proc(proc_name,base,offset).value
+                call_dest = proc_dir -  self.writer.get_current_position() - 5
+                self.log.info('Llamando a %s (salto %s' % (proc_name,call_dest))
+                self.writer.call(call_dest) 
+                self.read_token()
+    
+            elif self.next_token.type == 'begin':
+                self.read_token()
+                self.parse_statement(base, offset)
+                while not self.next_token.type == 'end':
+                    if self.assert_type('semicolon'):
+                        self.read_token()
+                    self.parse_statement(base, offset)
+                self.read_token()
+    
+            elif self.next_token.type == 'if':
+                self.read_token()
+                fixup_pos = self.parse_condition(base, offset)
+                jump_distance = self.writer.get_current_position()
+                if self.assert_type('then'):
                     self.read_token()
                 self.parse_statement(base, offset)
-            self.read_token()
-
-        elif self.next_token.type == 'if':
-            self.read_token()
-            fixup_pos = self.parse_condition(base, offset)
-            jump_distance = self.writer.get_current_position()
-            if self.assert_type('then'):
+                self.writer.fixup(fixup_pos, self.writer.get_current_position() - jump_distance , 4)
+            elif self.next_token.type == 'while':
                 self.read_token()
-            self.parse_statement(base, offset)
-            self.writer.fixup(fixup_pos, self.writer.get_current_position() - jump_distance , 4)
-        elif self.next_token.type == 'while':
-            self.read_token()
-            condition_pos = self.writer.get_current_position() # TODO
-            fixup_pos = self.parse_condition(base, offset)
-            jump_distance = self.writer.get_current_position()
-            self.assert_type('do')
-            self.read_token()
-            self.parse_statement(base, offset)
-            self.writer.jmp( condition_pos - self.writer.get_current_position() - 5 )
-            self.writer.fixup(fixup_pos, self.writer.get_current_position() - jump_distance , 4)
-        elif self.next_token.type == 'write':
-            self.read_token()
-            self.parse_write_args(base, offset)
-        elif self.next_token.type == 'writeln':
-            self.read_token()
-            self.parse_writeln_args(base, offset)
-        elif self.next_token.type == 'readln':
-            self.read_token()
-            self.assert_type('open_parenthesis')
-            self.read_token()
-            self.assert_type('ident')
-            self.log.info('Leyendo en %s' % self.next_token.value)
-
-            var_position = self.table.get_var(self.next_token.value, base, offset).value
-            self.writer.readln() # esto  deja en EAX el numero leido 
-            self.writer.mov_edi_plus_literal_eax(var_position) # mov edi+offset,eax            
-
-            self.read_token()
-            self.assert_type('close_parenthesis')
-            self.read_token()
+                condition_pos = self.writer.get_current_position() # TODO
+                fixup_pos = self.parse_condition(base, offset)
+                jump_distance = self.writer.get_current_position()
+                self.assert_type('do')
+                self.read_token()
+                self.parse_statement(base, offset)
+                self.writer.jmp( condition_pos - self.writer.get_current_position() - 5 )
+                self.writer.fixup(fixup_pos, self.writer.get_current_position() - jump_distance , 4)
+            elif self.next_token.type == 'write':
+                self.read_token()
+                self.parse_write_args(base, offset)
+            elif self.next_token.type == 'writeln':
+                self.read_token()
+                self.parse_writeln_args(base, offset)
+            elif self.next_token.type == 'readln':
+                self.read_token()
+    
+                self.assert_type('open_parenthesis')
+                self.read_token()
+                self.assert_type('ident')
+                self.log.info('Leyendo en %s' % self.next_token.value)
+    
+                var_position = self.table.get_var(self.next_token.value, base, offset).value
+                self.writer.readln() # esto  deja en EAX el numero leido 
+                self.writer.mov_edi_plus_literal_eax(var_position) # mov edi+offset,eax            
+    
+                self.read_token()
+                self.assert_type('close_parenthesis')
+                self.read_token()
+        except ValueError as e:
+            print(e)
+            while not self.next_token.type == "semicolon":
+                self.read_token()
 
 
     def parse_factor(self, base, offset):

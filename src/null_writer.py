@@ -111,7 +111,7 @@ class NullWriter():
         pass
     
     def get_current_position(self):
-        pass
+        return 0
     
     def fixup(self, position, value, size, signed=True):
         pass
