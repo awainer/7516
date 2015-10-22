@@ -106,6 +106,7 @@ class Parser():
                     except ValueError:
                         print("Error, identificador duplicado: " + last_id)
                         self.writer = NullWriter()
+                        offset-=1
                 self.read_token()
                 break
             elif self.next_token.type == "ident":
@@ -189,6 +190,11 @@ class Parser():
                 self.writer.write_number()         
         self.read_token()
 
+    def _panic_synchronize(self, token_type):
+        while not self.next_token.type in token_type:
+            self.read_token()
+        #self.read_token()
+
     def parse_statement(self, base, offset):
         self.log.debug('Parseando statement')
         try:
@@ -219,6 +225,7 @@ class Parser():
                 while not self.next_token.type == 'end':
                     if self.assert_type('semicolon'):
                         self.read_token()
+
                     self.parse_statement(base, offset)
                 self.read_token()
     
@@ -249,7 +256,8 @@ class Parser():
             elif self.next_token.type == 'readln':
                 self.read_token()
     
-                self.assert_type('open_parenthesis')
+                if not self.assert_type('open_parenthesis'):
+                    self._panic_synchronize(['semicolon','end'])
                 self.read_token()
                 self.assert_type('ident')
                 self.log.info('Leyendo en %s' % self.next_token.value)
@@ -263,8 +271,9 @@ class Parser():
                 self.read_token()
         except ValueError as e:
             print(e)
-            while not self.next_token.type == "semicolon":
-                self.read_token()
+            self._panic_synchronize(['semicolon','end'])
+            return
+
 
 
     def parse_factor(self, base, offset):

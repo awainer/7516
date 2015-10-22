@@ -1,7 +1,7 @@
 var X, Y, Z;
 
 procedure MULTIPLICAR;
-var A, B;
+var A, B, A;
 begin
      A := X;
      B := Y;
@@ -19,8 +19,10 @@ begin
 end;
 
 Begin
-     write ('X: '); readLn X;
-     write ('Y: '); readLn (Y);
+     write ('X: '); 
+     readLn X;
+     write ('Y: '); 
+     readLn (Y);
      MULTIPLICAR;
      writeLn ('X*Y=', Z);
 end.

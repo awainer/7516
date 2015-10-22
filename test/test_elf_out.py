@@ -14,25 +14,32 @@ class Test(unittest.TestCase):
     def test_out(self):
         txt = StringIO()
         p = '''
-VAR BASE, EXPO, RESU;
+var X, Y, Z;
 
-PROCEDURE POT;
-IF EXPO > 0 THEN
-   BEGIN
-        RESU := RESU * BASE;
-        EXPO := EXPO - 1;
-        CALL POT
-   END;
+procedure MULTIPLICAR;
+var A, B, A;
+begin
+     A := X;
+     B := Y;
+     Z := 0;
+     if X < 0 then A := -A;
+     if Y ( 0 then B := -B;
+     while B > 0 then
+         begin
+           if odd B then Z:= Z + A;
+           A := A * 2;
+           B := B / 2
+         end;
+     if X < 0 then Z:= -Z;
+     if Y < 0 then Z:= -Z
+end;
 
-BEGIN
-     WRITE ('BASE: '); READLN(BASE);
-     WRITE ('EXPONENTE: '); READLN(EXPO);
-     RESU := 1;
-     CALL POT;
-     IF EXPO < 0  THEN RESU := 0;
-     WRITELN ('RESULTADO: ', RESU);
-     WRITELN
-END.
+Begin
+     write ('X: '); readLn X;
+     write ('Y: '); readLn (Y);
+     MULTIPLICAR;
+     writeLn ('X*Y=', Z);
+end.
 
 
              '''
