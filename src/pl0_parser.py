@@ -36,6 +36,8 @@ class Parser():
             self.parse_program()
         except ValueError as e:
             print (e)
+        except AttributeError:
+            print('Fin inesperado del programa')
             #print('Ultimo token %s' %(self.next_token))
             #raise e
         self.log.info("Fin parse")
@@ -207,6 +209,8 @@ class Parser():
     def _panic_synchronize(self, token_type):
         while not self.next_token.type in token_type:
             self.read_token()
+            if not self.next_token:
+                return
         #self.read_token()
 
     def parse_statement(self, base, offset):
@@ -241,7 +245,6 @@ class Parser():
                         self.read_token()
                     else:
                         self._panic_synchronize('semicolon')
-                        print('panic')
                     self.parse_statement(base, offset)
                 self.read_token()
 

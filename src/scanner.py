@@ -17,6 +17,8 @@ class Scanner(object):
                 'odd', 'write', 'writeln', 'readln']
     tokens += reserved
 
+    MIN_INT_VALUE = -2147483648  # -2^31
+    MAX_INT_VALUE =  2147483647  # 2^31 - 1
     def __init__(self, src_file, debug=0):
         self.lexer = lex.lex(module=self, debug=debug)
         self.lines = src_file.readlines()
@@ -38,6 +40,8 @@ class Scanner(object):
     def t_number(self, t):
         r'\d+'
         t.value = int(t.value)
+        if t.value < self.MIN_INT_VALUE or t.value > self.MAX_INT_VALUE:
+            print('Valor invalido para un entero con signo de 32 bit: %s' % t.value) 
         return t
     t_const = 'const'
     t_equal = '='
@@ -90,9 +94,12 @@ class Scanner(object):
 
 
     def log_current_line(self, t):
-        line = self.lines[t.lexer.lineno]
-        line = line[:len(line) - 1]
-        print('%s: %s' % (t.lexer.lineno, line))
+        try:
+            line = self.lines[t.lexer.lineno]
+            line = line[:len(line) - 1]
+            print('%s: %s' % (t.lexer.lineno, line))
+        except IndexError:
+            pass
 
     def t_newline(self, t):
         r'[\n]'
@@ -101,7 +108,7 @@ class Scanner(object):
 
     def t_error(self, t):
         #raise TypeError("Unknown text '%s' at %s" % (t.value, t.lexer.lineno))
-        print("Unknown text '%s' at %s" % (t.value, t.lexer.lineno))
+        print("Error, no se encontraron tokens '%s' at %s" % (t.value, t.lexer.lineno))
         t.lexer.skip(1)
 
 
