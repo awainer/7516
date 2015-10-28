@@ -23,7 +23,7 @@ class Scanner(object):
         src_file.seek(0)
         self.lexer.input(src_file.read())
         src_file.close()
-        print(self.lines)
+
         print('0: %s' % self.lines[0][:len(self.lines[0]) - 1])
         self.line_count = 1
         

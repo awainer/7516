@@ -8,7 +8,7 @@ import logging
 from symbol_table import SymbolTable
 from code_writer import CodeWriter
 from null_writer import NullWriter
-from scanner import DummyToken
+
 
 class Parser():
     def __init__(self, scanner,output_file=None):
@@ -77,13 +77,17 @@ class Parser():
                         pass
                         #self.read_token()
                 else:
-                    self.error("Se esperaba un numero, pero se encontro:" +
+                    print("Se esperaba un numero, pero se encontro: " +
                                self.next_token.type)
+                    self._panic_synchronize(['semicolon','comma'])
+                    self.table.add_const(last_id, 0, base)
+                    offset+=1
             elif self.next_token.type == 'semicolon':
                 self.read_token()
                 return offset
             else:
-                self.error("Error, token inesperado: " + str(self.next_token))
+                print("Error, token inesperado: " + str(self.next_token))
+
         self.read_token()
         return offset
 
@@ -97,6 +101,7 @@ class Parser():
     def parse_var_decl(self, base, offset):
         last_id = ''
         added=False
+        self.log.info('Parseaando declaracion de variables.')
         while self.next_token.type != "semicolon":
             self.read_token()
             if self.next_token.type == "semicolon":
@@ -110,6 +115,9 @@ class Parser():
                 self.read_token()
                 break
             elif self.next_token.type == "ident":
+                if not added and last_id:
+                    print('Se esperaba coma, se encontro identificador.')
+                    self.table.add_var(last_id, base)
                 offset+=1
                 last_id = self.next_token.value
                 added = False
@@ -124,7 +132,10 @@ class Parser():
                 self.read_token()
                 return offset
             else:
-                self.error("Error, token inesperado: " + str(self.next_token))
+                print("Error, token inesperado: " + str(self.next_token))
+                self._panic_synchronize(['comma','semicolon','ident'])
+                if not added: 
+                    offset-=1
         return offset
 
     def parse_procedure_decl(self, base, offset):
@@ -135,8 +146,10 @@ class Parser():
         self.log.debug("Agrego proc %s, base %s offset %s" % (self.next_token.value,base,offset))
         self.log.info("Parseando procedimiento: %s" % self.next_token.value)
         self.read_token()
-        self.assert_type('semicolon')
-        self.read_token()
+        if self.assert_type('semicolon'):
+            self.read_token()
+        else:
+            print('Posiblemente falte ";" luego del identificador.')
         self.parse_block(base+offset)
         self.assert_type('semicolon')
         self.read_token()
@@ -190,6 +203,7 @@ class Parser():
                 self.writer.write_number()         
         self.read_token()
 
+
     def _panic_synchronize(self, token_type):
         while not self.next_token.type in token_type:
             self.read_token()
@@ -225,9 +239,12 @@ class Parser():
                 while not self.next_token.type == 'end':
                     if self.assert_type('semicolon'):
                         self.read_token()
-
+                    else:
+                        self._panic_synchronize('semicolon')
+                        print('panic')
                     self.parse_statement(base, offset)
                 self.read_token()
+
     
             elif self.next_token.type == 'if':
                 self.read_token()
@@ -269,6 +286,9 @@ class Parser():
                 self.read_token()
                 self.assert_type('close_parenthesis')
                 self.read_token()
+            elif self.next_token.type != 'end':
+                print('Token inesperado parseando statement: %s' % self.next_token.value)
+                self._panic_synchronize(['semicolon','end'])
         except ValueError as e:
             print(e)
             self._panic_synchronize(['semicolon','end'])
@@ -284,6 +304,7 @@ class Parser():
                 self.writer.mov_eax_edi_plus_literal(arg.value)
                 self.writer.push_eax()
             except ValueError:
+                # Si no es var veo si es const
                 arg = self.table.get_const(self.next_token.value, base, offset)
                 self.writer.mov_eax_literal(arg.value)
                 self.writer.push_eax()
@@ -301,6 +322,8 @@ class Parser():
             self.parse_expression(base, offset)
             self.assert_type('close_parenthesis')
             self.read_token()
+        else:
+            print('Se esperaba numero, identificador o apertura de parentesis.')
 
     def parse_term(self,base, offset):
         self.log.debug('Parseando termino')
