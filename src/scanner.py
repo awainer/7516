@@ -33,6 +33,7 @@ class Scanner(object):
     def next_token(self):
         return self.lexer.token()
 
+
     # Definicion de tokens
     def t_number(self, t):
         r'\d+'
@@ -99,7 +100,9 @@ class Scanner(object):
         t.lexer.lineno += 1  # t.value.count('\n')
 
     def t_error(self, t):
-        raise TypeError("Unknown text '%s' at %s" % (t.value, t.lexer.lineno))
+        #raise TypeError("Unknown text '%s' at %s" % (t.value, t.lexer.lineno))
+        print("Unknown text '%s' at %s" % (t.value, t.lexer.lineno))
+        t.lexer.skip(1)
 
 
 
