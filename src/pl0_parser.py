@@ -289,7 +289,7 @@ class Parser():
                 self.read_token()
                 self.assert_type('close_parenthesis')
                 self.read_token()
-            elif self.next_token.type != 'end':
+            elif self.next_token.type not in ['end','program_end']:
                 print('Token inesperado parseando statement: %s' % self.next_token.value)
                 self._panic_synchronize(['semicolon','end'])
         except ValueError as e:
