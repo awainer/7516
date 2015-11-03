@@ -36,8 +36,9 @@ class Parser():
             self.parse_program()
         except ValueError as e:
             print (e)
-        except AttributeError:
+        except AttributeError as e:
             print('Fin inesperado del programa')
+            print(e)
             #print('Ultimo token %s' %(self.next_token))
             #raise e
         self.log.info("Fin parse")
@@ -172,8 +173,12 @@ class Parser():
         while self.next_token.type == 'procedure':
             offset+=1
             self.parse_procedure_decl(base, offset)
-        
-        self.writer.fixup(fixup_pos, self.writer.get_current_position() - fixup_address, 4, signed=True)
+        jump_dest = self.writer.get_current_position() - fixup_address
+
+        if jump_dest == 0:
+            self.writer.delete_last_n_bytes(5)
+        else:
+            self.writer.fixup(fixup_pos, jump_dest, 4, signed=True)
         self.parse_statement(base, offset)
         self.log.debug('Fin parseando bloque, base %s offset %s' % (base,offset))
         return offset;
@@ -341,7 +346,8 @@ class Parser():
                 self.writer.imul_ebx()
                 self.writer.push_eax()
             elif last_op == 'divide':
-                self.writer.add_literals([0x58,0x5b,0x93,0x99,0xf7,0xfb,0x50]) # TODO pasar esto a asm
+                self.writer.pop_eax()
+                self.writer.add_literals([0x5b,0x93,0x99,0xf7,0xfb,0x50]) # TODO pasar esto a asm
             else:
                 raise ValueError('term must be a multiply or divide operation')
 
@@ -367,7 +373,8 @@ class Parser():
                 self.writer.add_eax_ebx()
                 self.writer.push_eax()
             elif last_op == 'substract':
-                self.writer.add_literals([0x58,0x5b,0x93,0x29,0xd8,0x50])
+                self.writer.pop_eax()
+                self.writer.add_literals([0x5b,0x93,0x29,0xd8,0x50])
 
     def parse_condition(self, base, offset):
         
@@ -375,7 +382,8 @@ class Parser():
         if self.next_token.type == 'odd':
             self.read_token()
             self.parse_expression(base, offset)
-            self.writer.add_literals([0x58, 0xa8, 0x01, 0x7b, 0x05, 0xe9, 0x00, 0x00, 0x00, 0x00])
+            self.writer.pop_eax()
+            self.writer.add_literals([0xa8, 0x01, 0x7b, 0x05, 0xe9, 0x00, 0x00, 0x00, 0x00])
             fixup_pos = self.writer.get_current_position() - 4
         else:
 
@@ -390,7 +398,8 @@ class Parser():
             self.read_token()
             # segunda expresion
             self.parse_expression(base, offset)
-            self.writer.add_literals([0x58,0x5b,0x39,0xc3])
+            self.writer.pop_eax()
+            self.writer.add_literals([0x5b,0x39,0xc3])
             fixup_pos = self.writer.condition_jump(last_rel)
             
         return fixup_pos

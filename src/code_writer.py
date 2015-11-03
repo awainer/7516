@@ -3,6 +3,8 @@ Created on 28 de set. de 2015
 
 @author: ari
 '''
+import os
+import stat
 import numpy as np
 import header
 import logging
@@ -59,7 +61,8 @@ class CodeWriter():
         self.fixup(201, len(self.code) - self.text_section_start , 4, signed=False)
         with open(self.out_file, 'wb') as outfile:
             outfile.write(bytearray(self.code))
-
+        st = os.stat(self.out_file)    
+        os.chmod(self.out_file, st.st_mode | stat.S_IEXEC)
         pos = 0
         for i in self.code:
             self.log.warning("Out: offset %s value %s" % (pos, hex(i)))
@@ -124,6 +127,10 @@ class CodeWriter():
         self.code += [0x50]
         
     def pop_eax(self):
+        if self.code[-1] == 0x50:
+            self.code.pop()
+            return
+        
         self.log.info('[%s] pop eax' % len(self.code))
         self.code += [0x58]
     
@@ -247,3 +254,7 @@ class CodeWriter():
         for i in range(size):
             self.log.warning("Fixup: %s=%s (%s)" % (position + i, value[i], hex(value[i])))
             self.code[position + i] = value[i]
+
+    def delete_last_n_bytes(self,count):
+        self.log.info('Borro bytes: ' + str(count))
+        self.code = self.code[:len(self.code) - 5]
