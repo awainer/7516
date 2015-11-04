@@ -347,7 +347,11 @@ class Parser():
                 self.writer.push_eax()
             elif last_op == 'divide':
                 self.writer.pop_eax()
-                self.writer.add_literals([0x5b,0x93,0x99,0xf7,0xfb,0x50]) # TODO pasar esto a asm
+                self.writer.pop_ebx()
+                self.writer.xchg_eax_ebx()
+                self.writer.cdq()
+                self.writer.idiv_ebx()
+                self.writer.push_eax()
             else:
                 raise ValueError('term must be a multiply or divide operation')
 
@@ -374,7 +378,11 @@ class Parser():
                 self.writer.push_eax()
             elif last_op == 'substract':
                 self.writer.pop_eax()
-                self.writer.add_literals([0x5b,0x93,0x29,0xd8,0x50])
+                self.writer.pop_ebx()
+                self.writer.xchg_eax_ebx()
+                self.writer.sub_eax_ebx()
+                self.writer.push_eax()
+
 
     def parse_condition(self, base, offset):
         
@@ -383,7 +391,9 @@ class Parser():
             self.read_token()
             self.parse_expression(base, offset)
             self.writer.pop_eax()
-            self.writer.add_literals([0xa8, 0x01, 0x7b, 0x05, 0xe9, 0x00, 0x00, 0x00, 0x00])
+            
+            self.writer.add_literals([0xa8, 0x01, 0x7b, 0x05])
+            self.writer.jmp(0)
             fixup_pos = self.writer.get_current_position() - 4
         else:
 
@@ -399,7 +409,8 @@ class Parser():
             # segunda expresion
             self.parse_expression(base, offset)
             self.writer.pop_eax()
-            self.writer.add_literals([0x5b,0x39,0xc3])
+            self.writer.pop_ebx()
+            self.writer.cmp_ebx_eax()
             fixup_pos = self.writer.condition_jump(last_rel)
             
         return fixup_pos
