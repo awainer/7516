@@ -19,7 +19,7 @@ class CodeWriter():
         self.text_section_start = 224  # pagina 22 del apunte
         self.code += [0xbf, 0x00, 0x00, 0x00, 0x00]
         self.variable_pointer_location = len(self.code) - 4
-        self.jumps = {'=': [0x74, 0x05], '<>': [0x75, 0x05], '<': [0x7c, 0x05], '<=': [0x7e, 0x05], '>': [0x7f, 0x05], '>=': [0x7d, 0x05]}
+        self.jumps = {'=': [0x74, 0x05], '<>': [0x75, 0x05], '<': [0x7c, 0x05], '<=': [0x7e, 0x05], '>': [0x7f, 0x05], '>=': [0x7d, 0x05], 'odd': [0x7b, 0x05]}
         self.func_address = {'print_string_ebx_to_edx': 0x170,
                              'print_newline': 0x180,
                              'print_int_eax': 0x190,

@@ -391,9 +391,8 @@ class Parser():
             self.read_token()
             self.parse_expression(base, offset)
             self.writer.pop_eax()
-            
-            self.writer.add_literals([0xa8, 0x01, 0x7b, 0x05])
-            self.writer.jmp(0)
+            self.writer.test_al(0x01)
+            self.writer.condition_jump('odd')
             fixup_pos = self.writer.get_current_position() - 4
         else:
 
